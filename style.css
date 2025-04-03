@@ -126,6 +126,11 @@ footer a:hover {
     position: relative;
     border-radius: 8px;
     box-shadow: 0 3px 10px var(--shadow-color);
+    transition: background-color 0.3s ease;
+}
+
+.timeline-content.active {
+    background-color: #f5f5f5;
 }
 
 /* Arrow pointing towards the line */
@@ -156,6 +161,11 @@ footer a:hover {
     font-weight: bold;
     color: var(--primary-color);
     margin-bottom: 5px;
+    transition: color 0.3s ease;
+}
+
+.timeline-content.active .year {
+    color: var(--secondary-color);
 }
 
 .timeline-content h3 {
@@ -386,4 +396,40 @@ footer a:hover {
         transform: scale(1);
         box-shadow: 0 0 0 0 rgba(245, 166, 35, 0);
     }
+}
+
+/* Play All button */
+.play-all-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.play-all-button:hover {
+    background-color: #3a7bc8;
+    transform: scale(1.05);
+}
+
+.play-all-button.playing {
+    background-color: var(--secondary-color);
+}
+
+/* Remove the playing icon styles since we're using text */
+.play-all-button.playing .fa-play {
+    display: none;
+}
+
+/* Remove the before pseudo-element that was adding an extra icon */
+.play-all-button.playing::before {
+    content: '';
+    margin-right: 0;
 }
