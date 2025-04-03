@@ -44,17 +44,40 @@ document.addEventListener('DOMContentLoaded', () => {
         updateButtonText(toggleAllButton, allDetailsShown);
     });
 
-    // Text-to-Speech functionality
-    const speakButtons = document.querySelectorAll('.speak-button');
-
-    const stopCurrentlyPlaying = () => {
-        if (currentlyPlayingButton) {
-            currentlyPlayingButton.classList.remove('speaking');
-            currentlyPlayingButton = null;
+    // Function to gather text content from a timeline item
+    const gatherTextContent = (content) => {
+        console.log('Gathering text content...');
+        
+        const year = content.querySelector('.year').textContent;
+        console.log('Year:', year);
+        
+        const title = content.querySelector('h3').textContent;
+        console.log('Title:', title);
+        
+        const details = content.querySelector('.details');
+        let detailsText = '';
+        
+        // Always show details before gathering text
+        if (details && !details.classList.contains('active')) {
+            details.classList.add('active');
         }
+        
+        if (details) {
+            const paragraphs = details.querySelectorAll('p');
+            paragraphs.forEach((p, index) => {
+                detailsText += ' ' + p.textContent;
+                console.log(`Paragraph ${index + 1}:`, p.textContent);
+            });
+        }
+        
+        const fullText = `${year}: ${title}.${detailsText}`;
+        console.log('Full text to speak:', fullText);
+        return fullText;
     };
 
+    // Function to play audio
     const playAudio = async (base64Audio, button) => {
+        console.log('Creating audio from base64...');
         const audioData = atob(base64Audio);
         const arrayBuffer = new ArrayBuffer(audioData.length);
         const view = new Uint8Array(arrayBuffer);
@@ -67,18 +90,42 @@ document.addEventListener('DOMContentLoaded', () => {
         const audio = new Audio(audioUrl);
         
         audio.addEventListener('ended', () => {
+            console.log('Audio playback ended');
             button.classList.remove('speaking');
             currentlyPlayingButton = null;
             URL.revokeObjectURL(audioUrl);
         });
 
-        audio.play();
+        console.log('Starting audio playback...');
+        try {
+            await audio.play();
+            console.log('Audio playback started successfully');
+        } catch (error) {
+            console.error('Audio playback error:', error);
+            button.classList.remove('speaking');
+            currentlyPlayingButton = null;
+            alert('Failed to play audio. Please try again.');
+        }
+    };
+
+    // Text-to-Speech functionality
+    const speakButtons = document.querySelectorAll('.speak-button');
+
+    const stopCurrentlyPlaying = () => {
+        console.log('Stopping current playback...');
+        if (currentlyPlayingButton) {
+            currentlyPlayingButton.classList.remove('speaking');
+            currentlyPlayingButton = null;
+        }
     };
 
     speakButtons.forEach(button => {
         button.addEventListener('click', async () => {
+            console.log('Speak button clicked');
+            
             // If this button is already speaking, stop it
             if (button.classList.contains('speaking')) {
+                console.log('Stopping current speech');
                 stopCurrentlyPlaying();
                 return;
             }
@@ -88,24 +135,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Get the content to speak
             const content = button.closest('.timeline-content');
-            const year = content.querySelector('.year').textContent;
-            const title = content.querySelector('h3').textContent;
-            const details = content.querySelector('.details');
+            const textToSpeak = gatherTextContent(content);
             
-            // Construct the text to speak
-            let textToSpeak = `${year}: ${title}.`;
-            if (details && details.classList.contains('active')) {
-                const paragraphs = details.querySelectorAll('p');
-                paragraphs.forEach(p => {
-                    textToSpeak += ' ' + p.textContent;
-                });
-            }
-
             try {
+                console.log('Setting button to speaking state');
                 button.classList.add('speaking');
                 currentlyPlayingButton = button;
 
-                // Call our Netlify function
+                console.log('Calling text-to-speech API...');
                 const response = await fetch('/.netlify/functions/text-to-speech', {
                     method: 'POST',
                     headers: {
@@ -118,16 +155,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to generate speech');
+                    const errorData = await response.json();
+                    console.error('API Error:', errorData);
+                    throw new Error(errorData.details || 'Failed to generate speech');
                 }
 
+                console.log('Received API response');
                 const data = await response.json();
                 await playAudio(data.audio, button);
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error in speech generation:', error);
                 button.classList.remove('speaking');
                 currentlyPlayingButton = null;
-                alert('Failed to generate speech. Please try again.');
+                alert('Failed to generate speech: ' + error.message);
             }
         });
     });
