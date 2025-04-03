@@ -1,0 +1,348 @@
+/* General Styling */
+:root {
+    --primary-color: #4a90e2; /* A nice blue */
+    --secondary-color: #f5a623; /* An accent orange */
+    --background-color: #f4f7f6; /* Light grey background */
+    --text-color: #333;
+    --timeline-line-color: #ccc;
+    --card-background: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+header, footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    background-color: var(--card-background);
+    box-shadow: 0 2px 5px var(--shadow-color);
+    margin-bottom: 2rem;
+}
+
+header h1 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+footer {
+    margin-top: 2rem;
+    font-size: 0.9em;
+    color: #666;
+}
+
+footer a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* Timeline Container */
+.timeline-container {
+    position: relative;
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 1rem 0;
+}
+
+/* The Central Timeline Line */
+.timeline-container::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--timeline-line-color);
+    transform: translateX(-50%);
+    border-radius: 2px;
+}
+
+/* Timeline Item */
+.timeline-item {
+    position: relative;
+    margin-bottom: 50px;
+    width: 50%;
+    padding: 10px 40px;
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Position items on alternating sides */
+.timeline-item:nth-child(odd) {
+    left: 0;
+    padding-left: 0; /* Reset padding */
+    padding-right: 40px; /* Add padding to the right */
+    text-align: right; /* Align text to the right for left items */
+}
+
+.timeline-item:nth-child(even) {
+    left: 50%;
+     padding-right: 0; /* Reset padding */
+    padding-left: 40px; /* Add padding to the left */
+}
+
+/* Timeline Icon */
+.timeline-icon {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    top: 15px; /* Adjust vertical position */
+    z-index: 1;
+    box-shadow: 0 0 0 4px var(--background-color), inset 0 2px 0 rgba(0,0,0,0.08), 0 3px 0 4px rgba(0,0,0,0.05);
+}
+
+/* Position icons correctly on the line */
+.timeline-item:nth-child(odd) .timeline-icon {
+    right: -25px; /* Half icon width to center on line */
+    transform: translateX(0%); /* No translation needed */
+}
+
+.timeline-item:nth-child(even) .timeline-icon {
+    left: -25px; /* Half icon width to center on line */
+    transform: translateX(0%); /* No translation needed */
+}
+
+
+/* Timeline Content Box */
+.timeline-content {
+    padding: 20px 30px;
+    background-color: var(--card-background);
+    position: relative;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px var(--shadow-color);
+}
+
+/* Arrow pointing towards the line */
+.timeline-content::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    width: 0;
+    height: 0;
+    border: 10px solid transparent;
+
+}
+/* Arrow for left items (pointing right) */
+.timeline-item:nth-child(odd) .timeline-content::before {
+    right: -20px; /* Position arrow outside the box */
+    border-left-color: var(--card-background);
+}
+/* Arrow for right items (pointing left) */
+.timeline-item:nth-child(even) .timeline-content::before {
+    left: -20px; /* Position arrow outside the box */
+    border-right-color: var(--card-background);
+}
+
+/* Content Styling */
+.timeline-content .year {
+    display: block;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.timeline-content h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.timeline-content .details {
+    display: none; /* Hidden by default */
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    font-size: 0.95em;
+    color: #444;
+}
+
+.timeline-content .details.active {
+    display: block; /* Shown when active class is added */
+}
+
+.timeline-content blockquote {
+    border-left: 3px solid var(--secondary-color);
+    padding-left: 15px;
+    margin: 10px 0 10px 0; /* Adjusted margin */
+    font-style: italic;
+    color: #555;
+}
+
+.timeline-content .details p {
+    margin-bottom: 5px;
+}
+
+.timeline-content .details a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+.timeline-content .details a:hover {
+    text-decoration: underline;
+}
+
+
+/* Details Toggle Button */
+.details-toggle {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-top: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.details-toggle:hover {
+    background-color: #3a7bc8; /* Darker blue on hover */
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+    .timeline-container::before {
+        left: 30px; /* Move line to the left */
+        transform: translateX(0);
+    }
+
+    .timeline-item {
+        width: 100%;
+        padding-left: 70px; /* Space for icon and line */
+        padding-right: 15px;
+        left: 0 !important; /* Force all items to the right side */
+        text-align: left !important; /* Reset text alignment */
+    }
+
+     .timeline-item:nth-child(odd),
+     .timeline-item:nth-child(even) {
+        left: 0; /* Override alternating positioning */
+        padding-left: 70px; /* Consistent padding */
+        padding-right: 15px;
+        text-align: left; /* Consistent alignment */
+    }
+
+    .timeline-icon {
+        left: 5px; /* Position icon relative to the new line position */
+         transform: translateX(0); /* Reset any transform */
+    }
+
+    .timeline-item:nth-child(odd) .timeline-icon,
+    .timeline-item:nth-child(even) .timeline-icon {
+        left: 5px; /* Consistent icon position */
+        right: auto; /* Remove right positioning */
+    }
+
+    .timeline-content::before {
+        left: -20px; /* Point arrow left for all items */
+        border-right-color: var(--card-background);
+        border-left-color: transparent; /* Ensure only one side has color */
+         right: auto; /* Remove right positioning */
+    }
+
+    .timeline-item:nth-child(odd) .timeline-content::before {
+        left: -20px; /* Point arrow left for all items */
+        border-right-color: var(--card-background);
+        border-left-color: transparent; /* Ensure only one side has color */
+        right: auto; /* Remove right positioning */
+    }
+}
+
+/* Add styling for the toggle-all button */
+#toggle-all-details {
+    margin-top: 1rem;
+    font-size: 1em;
+    padding: 10px 20px;
+    background-color: var(--secondary-color);
+}
+
+#toggle-all-details:hover {
+    background-color: #e09213; /* Darker orange on hover */
+}
+
+/* Controls container in header */
+.controls {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+/* Voice select dropdown */
+.voice-select {
+    padding: 8px 15px;
+    border-radius: 5px;
+    border: 1px solid var(--primary-color);
+    background-color: white;
+    color: var(--text-color);
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.voice-select:hover {
+    border-color: var(--secondary-color);
+}
+
+/* Content header with year and speak button */
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+/* Speak button */
+.speak-button {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.speak-button:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.speak-button.speaking {
+    animation: pulse 1s infinite;
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}

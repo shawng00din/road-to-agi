@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Road to AGI and Beyond - An Interactive Timeline</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome CDN (for icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+    <header>
+        <h1>The Road to AGI and Beyond</h1>
+        <p>An interactive timeline based on insights from the Artificial Intelligence Show podcast series and AI history.</p>
+        <div class="controls">
+            <button id="toggle-all-details" class="details-toggle">Show All Details</button>
+            <select id="voice-select" class="voice-select">
+                <option value="alloy">Alloy (Balanced)</option>
+                <option value="echo">Echo (Warm)</option>
+                <option value="fable">Fable (Expressive)</option>
+                <option value="onyx">Onyx (Deep)</option>
+                <option value="nova">Nova (Friendly)</option>
+                <option value="shimmer">Shimmer (Clear)</option>
+            </select>
+        </div>
+    </header>
+
+    <div class="timeline-container">
+
+        <!-- *** NEW MILESTONE *** -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-calculator"></i> <!-- Icon representing computation/thought -->
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">1950</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Turing Test & Foundations</h3>
+                <div class="details">
+                    <p><strong>Players/Concepts:</strong> Alan Turing</p>
+                    <p>Alan Turing publishes "Computing Machinery and Intelligence," proposing the <a href="https://en.wikipedia.org/wiki/Turing_test" target="_blank" rel="noopener noreferrer">Turing Test</a> as a benchmark for machine intelligence and laying philosophical groundwork for AI.</p>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- *** NEW MILESTONE *** -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-users"></i> <!-- Icon representing a group/workshop -->
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">1956</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Dartmouth Workshop - AI is Born</h3>
+                <div class="details">
+                    <p><strong>Players/Concepts:</strong> John McCarthy, Marvin Minsky, Claude Shannon, Nathaniel Rochester, etc.</p>
+                    <p>A summer workshop at Dartmouth College coins the term "Artificial Intelligence" and brings together founding researchers, establishing AI as a formal field of study.</p>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- *** NEW MILESTONE *** -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-snowflake"></i> <!-- Icon for winter/freeze -->
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">~ Mid 1970s</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>First AI Winter</h3>
+                <div class="details">
+                    <p><strong>Concepts:</strong> Overpromising, Computational Limits, <a href="https://en.wikipedia.org/wiki/Lighthill_report" target="_blank" rel="noopener noreferrer">Lighthill Report</a> (UK), DARPA funding cuts (US).</p>
+                    <p>A period of reduced funding and interest in AI research due to unmet expectations, limitations in computing power, and critical government reports questioning progress.</p>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- *** NEW MILESTONE *** -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-lightbulb"></i> <!-- Icon for ideas/boom -->
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">~ Early 1980s</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Expert Systems Boom</h3>
+                <div class="details">
+                    <p><strong>Concepts:</strong> <a href="https://en.wikipedia.org/wiki/Expert_system" target="_blank" rel="noopener noreferrer">Expert Systems</a>, Knowledge Engineering, Lisp Machines.</p>
+                    <p>AI finds commercial success with Expert Systems – programs designed to mimic the decision-making ability of a human expert in narrow domains. Specialized hardware emerges.</p>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- *** NEW MILESTONE *** -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-snowflake"></i> <!-- Icon for winter/freeze -->
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">~ Late 80s / Early 90s</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Second AI Winter</h3>
+                <div class="details">
+                    <p><strong>Concepts:</strong> Collapse of Lisp Machine market, High cost/brittleness of Expert Systems.</p>
+                    <p>The hype around Expert Systems fades as they prove difficult and expensive to maintain and scale. The specialized hardware market collapses, leading to another downturn in funding and interest.</p>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+         <!-- *** NEW MILESTONE *** -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-chess-king"></i> <!-- Icon for chess/strategy -->
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">1997</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>IBM Deep Blue vs. Kasparov</h3>
+                <div class="details">
+                    <p><strong>Players/Concepts:</strong> <a href="https://en.wikipedia.org/wiki/Deep_Blue_versus_Garry_Kasparov" target="_blank" rel="noopener noreferrer">IBM Deep Blue</a>, Garry Kasparov.</p>
+                    <p>IBM's chess-playing computer, Deep Blue, defeats world chess champion Garry Kasparov in a landmark match, showcasing the power of specialized hardware and brute-force search for specific tasks.</p>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- *** NEW MILESTONE *** -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-trophy"></i> <!-- Icon for winning/achievement -->
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2011</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>IBM Watson Wins Jeopardy!</h3>
+                <div class="details">
+                    <p><strong>Players/Concepts:</strong> <a href="https://www.ibm.com/watson" target="_blank" rel="noopener noreferrer">IBM Watson</a>, Natural Language Processing (NLP), Question Answering.</p>
+                    <p>IBM's Watson computer defeats human champions on the quiz show Jeopardy!, demonstrating significant advances in NLP, information retrieval, and understanding nuanced language. Paul Raîter called this his "inflection point" for getting into AI.</p>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- *** NEW MILESTONE *** -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-network-wired"></i> <!-- Icon for neural networks -->
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2012</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>AlexNet & Deep Learning Boom</h3>
+                <div class="details">
+                    <p><strong>Players/Concepts:</strong> <a href="https://en.wikipedia.org/wiki/AlexNet" target="_blank" rel="noopener noreferrer">AlexNet</a>, Geoffrey Hinton, Yann LeCun, Yoshua Bengio, ImageNet Challenge, GPUs, <a href="https://en.wikipedia.org/wiki/Deep_learning" target="_blank" rel="noopener noreferrer">Deep Learning</a>.</p>
+                    <p>AlexNet, a deep convolutional neural network, dramatically wins the ImageNet image recognition competition. This success, enabled by large datasets and GPU acceleration, triggers the modern deep learning revolution.</p>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- *** NEW MILESTONE *** -->
+         <div class="timeline-item">
+            <div class="timeline-icon">
+                 <i class="fas fa-gamepad"></i> <!-- Icon representing Go/games -->
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2016</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>AlphaGo & "Move 37"</h3>
+                <div class="details">
+                    <p><strong>Players/Concepts:</strong> <a href="https://deepmind.google/discover/blog/alphago-the-story-so-far/" target="_blank" rel="noopener noreferrer">Google DeepMind AlphaGo</a>, Lee Sedol, Reinforcement Learning, Monte Carlo Tree Search.</p>
+                    <p>DeepMind's AlphaGo defeats world Go champion Lee Sedol 4-1. "Move 37" in game 2 becomes famous as a creative, unexpected move by the AI, highlighting the potential beyond human intuition in complex strategy.</p>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- Milestone: 2023 (Original Start) -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-lightbulb"></i>
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2023</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Sam Altman's Definition of AGI</h3>
+                <div class="details">
+                    <p><strong>Players:</strong> Sam Altman (<a href="https://openai.com/" target="_blank" rel="noopener noreferrer">OpenAI</a>)</p>
+                    <blockquote>
+                        "AGI is when AI can achieve novel scientific breakthroughs on its own."
+                    </blockquote>
+                    <p>Reported from an Oct 2023 interview, highlighting a capability-focused view of AGI.</p>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- Milestone: 2024 -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2024</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>OpenAI's 5-Year AGI Estimate Surfaces</h3>
+                 <div class="details">
+                    <p><strong>Players:</strong> Sam Altman (<a href="https://openai.com/" target="_blank" rel="noopener noreferrer">OpenAI</a>)</p>
+                    <blockquote>
+                         "AGI will be a reality in five years, give or take."
+                    </blockquote>
+                     <p>Quote from the Oct 2023 interview widely reported in early 2024, accelerating public discussion on timelines.</p>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- Milestone: 2024 -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-brain"></i>
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2024</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Defining & Measuring AGI</h3>
+                 <div class="details">
+                    <p><strong>Players:</strong> <a href="https://openai.com/" target="_blank" rel="noopener noreferrer">OpenAI</a>, <a href="https://deepmind.google/" target="_blank" rel="noopener noreferrer">DeepMind</a>, <a href="https://cloud.google.com/" target="_blank" rel="noopener noreferrer">Google Cloud</a>, Researchers</p>
+                    <p>Increased focus on defining AGI, often centering on human-level performance across cognitive tasks. DeepMind publishes "Levels of AGI" paper proposing a framework for measurement.</p>
+                    <blockquote>
+                        "AGI is an AI system that is at least as capable as a human at most tasks." (DeepMind Paper Definition)
+                    </blockquote>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- Milestone: 2024 -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-shield-halved"></i>
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2024</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Formation of Safe Superintelligence Inc.</h3>
+                 <div class="details">
+                    <p><strong>Players:</strong> Ilya Sutskever (Formerly <a href="https://openai.com/" target="_blank" rel="noopener noreferrer">OpenAI</a>), Daniel Gross, Daniel Levy</p>
+                     <p>Launch of a new lab explicitly focused on building safe superintelligence, signaling intense focus and competition at the frontier.</p>
+                     <blockquote>
+                         "Our singular focus means no distraction by management overhead or product cycles..." - SSI Website
+                    </blockquote>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+         <!-- Milestone: 2024 -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-cogs"></i>
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2024</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Reasoning Models Advance</h3>
+                 <div class="details">
+                    <p><strong>Players:</strong> <a href="https://www.anthropic.com/" target="_blank" rel="noopener noreferrer">Anthropic</a> (Claude 3.5 Sonnet), <a href="https://openai.com/" target="_blank" rel="noopener noreferrer">OpenAI</a> (O1, GPT-4o), <a href="https://deepmind.google/" target="_blank" rel="noopener noreferrer">Google DeepMind</a> (Gemini 1.5 Pro updates, Gemini 2.5 Pro)</p>
+                    <p>Significant improvements in model reasoning, planning, and complex problem-solving capabilities ("System 2 thinking"), often utilizing techniques like test-time compute scaling.</p>
+                    <blockquote>
+                        "...starting to get to what I would call the PHD or professional level." - Dario Amodei (Anthropic CEO, referring to capabilities)
+                    </blockquote>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- Milestone: 2025 -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2025 (Prediction)</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Confidence in Building AGI Grows</h3>
+                 <div class="details">
+                    <p><strong>Players:</strong> Sam Altman (<a href="https://openai.com/" target="_blank" rel="noopener noreferrer">OpenAI</a>), other lab leaders</p>
+                    <p>Statements from AI lab leaders express increasing confidence in the *path* to AGI, even if the exact timeline remains debated.</p>
+                    <blockquote>
+                        "We are now confident we know how to build AGI as we have traditionally understood it." - Sam Altman (Jan 2025)
+                    </blockquote>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- Milestone: 2025 -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2025 (Prediction)</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Superintelligence Discussions Intensify</h3>
+                 <div class="details">
+                    <p><strong>Players/Concepts:</strong> Leopold Aschenbrenner ("Situational Awareness"), Sam Altman (<a href="https://openai.com/" target="_blank" rel="noopener noreferrer">OpenAI</a>), Dan Hendrycks ("Superintelligence Strategy"), <a href="https://safe.ai/" target="_blank" rel="noopener noreferrer">Safe Superintelligence Inc.</a></p>
+                    <p>Focus shifts beyond AGI towards the potential and perils of Artificial Superintelligence (ASI), with predictions of its arrival shortening.</p>
+                    <blockquote>
+                        "It is possible that we will have superintelligence in a few thousand days." - Sam Altman (Sep 2024)
+                    </blockquote>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+         <!-- Milestone: 2025 -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-users-cog"></i>
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2025 (Prediction)</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Early AI Agent Integration</h3>
+                 <div class="details">
+                    <p><strong>Players:</strong> <a href="https://openai.com/" target="_blank" rel="noopener noreferrer">OpenAI</a>, <a href="https://google.com/" target="_blank" rel="noopener noreferrer">Google</a>, <a href="https://www.anthropic.com/" target="_blank" rel="noopener noreferrer">Anthropic</a>, Startups</p>
+                    <p>AI systems capable of taking actions (agents) begin to be integrated into workflows, initially often semi-autonomous or focused on narrow tasks like research or scheduling. Computer Use interfaces emerge.</p>
+                    <blockquote>
+                        "In 2025 we may see the first AI agents join the workforce..." - Sam Altman (Jan 2025)
+                    </blockquote>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+         <!-- Milestone: 2026 -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-network-wired"></i>
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2026 (Prediction)</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>More Capable AI Agents</h3>
+                 <div class="details">
+                    <p><strong>Players:</strong> Tech Companies, Enterprises</p>
+                    <p>AI agents become more capable and potentially more autonomous, starting to handle more complex, multi-step tasks across various business domains, though widespread adoption challenges (integration, trust, security) likely remain.</p>
+                     <blockquote>
+                        "AI agents... just like digital employees you have to train them... evaluate them... guardrail them..." - Jensen Huang (Nvidia CEO, Nov 2024, describing the process)
+                    </blockquote>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- Milestone: 2027 -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-flag-checkered"></i>
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2027 (Prediction)</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Potential AGI Declaration</h3>
+                 <div class="details">
+                    <p><strong>Players:</strong> TBD – Likely <a href="https://openai.com/" target="_blank" rel="noopener noreferrer">OpenAI</a>, <a href="https://deepmind.google/" target="_blank" rel="noopener noreferrer">Google</a>, <a href="https://www.anthropic.com/" target="_blank" rel="noopener noreferrer">Anthropic</a>, <a href="https://safe.ai/" target="_blank" rel="noopener noreferrer">SSI</a></p>
+                    <p>Based on current trajectories and predictions from figures like Amodei and Aschenbrenner, one or more labs might claim to have achieved AGI (matching average or skilled human performance across most cognitive tasks). Debates over definitions will likely ensue.</p>
+                     <blockquote>
+                        "...if we extrapolate the straight curve within a few years we will get to these models being above the highest professional level..." - Dario Amodei (Nov 2024, suggesting rapid progress)
+                    </blockquote>
+                 </div>
+                 <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- Milestone: 2028 -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-building"></i>
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2028 (Prediction)</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Emergence of AI Organizations?</h3>
+                 <div class="details">
+                    <p><strong>Players:</strong> <a href="https://openai.com/" target="_blank" rel="noopener noreferrer">OpenAI</a>, <a href="https://about.meta.com/" target="_blank" rel="noopener noreferrer">Meta</a>, <a href="https://x.ai/" target="_blank" rel="noopener noreferrer">xAI</a>, Future AI Systems</p>
+                    <p>Following OpenAI's proposed stages, AI systems might begin coordinating complex tasks at the scale of an organization, potentially operating with significant autonomy.</p>
+                     <p>(Based on OpenAI's "Level 5: Organizations" concept)</p>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- Milestone: 2029 -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-infinity"></i>
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2029 (Prediction)</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Superintelligence Arrival?</h3>
+                 <div class="details">
+                    <p><strong>Players:</strong> <a href="https://safe.ai/" target="_blank" rel="noopener noreferrer">Safe Superintelligence Inc.</a>, <a href="https://openai.com/" target="_blank" rel="noopener noreferrer">OpenAI</a>, <a href="https://deepmind.google/" target="_blank" rel="noopener noreferrer">Google DeepMind</a></p>
+                    <p>Some predictions place the potential arrival of ASI (outperforming the smartest humans across virtually all domains) around this timeframe, marking a profound shift.</p>
+                     <p>(Aligned with "end of decade" predictions like Aschenbrenner's)</p>
+                </div>
+                <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+        <!-- Milestone: 2030 -->
+        <div class="timeline-item">
+            <div class="timeline-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="timeline-content">
+                <div class="content-header">
+                    <span class="year">2030+ (Outlook)</span>
+                    <button class="speak-button" aria-label="Read aloud">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <h3>Societal & Economic Transformation</h3>
+                 <div class="details">
+                    <p><strong>Players:</strong> Governments, AI labs, Corporations, Society</p>
+                    <p>Significant societal adaptation becomes necessary to handle the productivity gains, job displacement, ethical challenges, and opportunities presented by advanced AGI or early ASI systems.</p>
+                    <blockquote>
+                        "Economic systems shift to accommodate AGI-era productivity and disruption." (Projected outcome)
+                    </blockquote>
+                </div>
+                 <button class="details-toggle">Show Details</button>
+            </div>
+        </div>
+
+    </div> <!-- end timeline-container -->
+
+    <footer>
+        <p>Data primarily sourced from the <a href="https://www.marketingaiinstitute.com/podcast-show-notes/episode-141-road-to-agi-beyond-part-1" target="_blank" rel="noopener noreferrer">Artificial Intelligence Show Episode 141</a>, associated materials, and historical AI milestones. This timeline represents interpretations and predictions; the future remains uncertain.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
