@@ -15,14 +15,13 @@
         <p>An interactive timeline based on insights from the Artificial Intelligence Show podcast series and AI history.</p>
         <div class="controls">
             <button id="toggle-all-details" class="details-toggle">Show All Details</button>
-            <select id="voice-select" class="voice-select">
-                <option value="alloy">Alloy (Balanced)</option>
-                <option value="echo">Echo (Warm)</option>
-                <option value="fable">Fable (Expressive)</option>
-                <option value="onyx">Onyx (Deep)</option>
-                <option value="nova">Nova (Friendly)</option>
-                <option value="shimmer">Shimmer (Clear)</option>
-            </select>
+            <div class="voice-control">
+                <label for="voice-select">Voice:</label>
+                <select id="voice-select" class="voice-select">
+                    <option value="fable">Fable (Male)</option>
+                    <option value="nova">Nova (Female)</option>
+                </select>
+            </div>
         </div>
     </header>
 
@@ -36,7 +35,7 @@
             <div class="timeline-content">
                 <div class="content-header">
                     <span class="year">1950</span>
-                    <button class="speak-button" aria-label="Read aloud">
+                    <button class="speak-button" aria-label="Read aloud (click again to stop)">
                         <i class="fas fa-volume-up"></i>
                     </button>
                 </div>

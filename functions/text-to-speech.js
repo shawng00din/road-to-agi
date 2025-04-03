@@ -56,8 +56,18 @@ exports.handler = async function(event, context) {
     // Convert the response to base64
     console.log('Converting audio to base64...');
     const buffer = Buffer.from(await mp3.arrayBuffer());
+    console.log('Buffer created, size:', buffer.length);
     const base64Audio = buffer.toString('base64');
-    console.log('Audio conversion successful, base64 length:', base64Audio.length);
+    console.log('Base64 conversion complete, length:', base64Audio.length);
+    
+    // Verify the base64 string is valid
+    try {
+      const testBuffer = Buffer.from(base64Audio, 'base64');
+      console.log('Base64 verification successful, decoded size:', testBuffer.length);
+    } catch (error) {
+      console.error('Base64 verification failed:', error);
+      throw new Error('Invalid base64 audio data generated');
+    }
 
     return {
       statusCode: 200,
