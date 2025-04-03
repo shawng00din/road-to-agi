@@ -4,7 +4,9 @@ An interactive timeline visualization of AI progress, featuring key milestones f
 
 ## Overview
 
-This project presents a visually engaging timeline chronicling the development of artificial intelligence from its foundational concepts to potential future milestones. The timeline is based on insights from the Artificial Intelligence Show podcast series and historical AI milestones, combining factual history with informed projections of what may come.
+This project was ideated by Paul Roetzer on the [Artificial Intelligence Show podcast](https://www.marketingaiinstitute.com/podcast-show-notes/episode-141-road-to-agi-beyond-part-1). It presents a visually engaging timeline chronicling the development of artificial intelligence from its foundational concepts to potential future milestones. The timeline is based on insights from [Episode 141 of the Artificial Intelligence Show podcast series](https://www.marketingaiinstitute.com/podcast-show-notes/episode-141-road-to-agi-beyond-part-1) and historical AI milestones, combining factual history with informed projections of what may come. Important note: This timeline represents interpretations and predictions; the future remains uncertain.
+
+You can also watch the [YouTube version of the podcast here](https://www.youtube.com/watch?v=SUAuB5g_oCw&t=653s).
 
 ## Features
 
@@ -51,7 +53,8 @@ To develop or modify this project:
 
 ## Credits
 
-- Data sourced primarily from the Artificial Intelligence Show podcast and associated materials
+- Project ideated by Paul Roetzer on the [Artificial Intelligence Show podcast](https://www.marketingaiinstitute.com/podcast-show-notes/episode-141-road-to-agi-beyond-part-1)
+- Data primarily sourced from the [Artificial Intelligence Show Episode 141](https://www.marketingaiinstitute.com/podcast-show-notes/episode-141-road-to-agi-beyond-part-1), [YouTube video](https://www.youtube.com/watch?v=SUAuB5g_oCw&t=653s), associated materials, and historical AI milestones
 - Historical AI milestone information from various academic and industry sources
 - Text-to-speech functionality powered by Elevenlabs API via Netlify Functions
 
