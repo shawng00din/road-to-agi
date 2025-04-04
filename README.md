@@ -40,6 +40,30 @@ This project uses:
 - Font Awesome for icons
 - Netlify Functions for handling text-to-speech API requests
 - IndexedDB for audio caching to improve performance
+- Pre-generated audio files stored as static assets on Netlify
+
+## Audio Generation System
+
+To reduce API costs and improve performance, this project uses a pre-generation system for audio files:
+
+1. **Static Audio Files**: All timeline audio is pre-generated during the Netlify build process and stored as static files.
+
+2. **Content Change Detection**: 
+   - The system tracks content hashes in a JSON file to detect when text changes
+   - It only regenerates audio for items with changed content
+   - This ensures audio files stay in sync with text while minimizing API costs
+
+3. **Auto-Generation Process**:
+   - Runs automatically during Netlify builds
+   - Generates MP3 files for both male and female voices
+   - Stores files in `/public/audio/[voice]/[item-id].mp3`
+
+4. **Fallback Mechanism**:
+   - First tries to load audio from static files
+   - Only calls the API if a static file is missing
+   - Caches API responses in IndexedDB for future use
+
+For more details on the audio generation system, see [scripts/README.md](scripts/README.md).
 
 ## Development
 
@@ -51,12 +75,36 @@ To develop or modify this project:
 4. Modify `script.js` for functionality updates
 5. Update timeline content in `index.html`
 
+### Managing Audio Generation
+
+If you modify timeline content, you'll need to update the audio files:
+
+1. **Prerequisites**:
+   - Ensure you have Node.js installed
+   - Create a `.env` file with your OpenAI API key: `OPENAI_API_KEY=your_key_here`
+
+2. **Generate Audio Locally**:
+   ```bash
+   npm install             # Install dependencies
+   npm run generate-audio  # Generate audio files
+   ```
+
+3. **Automatic Generation**:
+   - Audio is automatically generated during Netlify builds
+   - Files are stored in the `public/audio` directory
+   - The system only regenerates audio for changed content
+
+4. **Cost Considerations**:
+   - The script is designed to minimize API calls
+   - It tracks content hashes to avoid regenerating unchanged audio
+   - Each API call uses OpenAI's text-to-speech service which has associated costs
+
 ## Credits
 
 - Project ideated by Paul Roetzer on the [Artificial Intelligence Show podcast](https://www.marketingaiinstitute.com/podcast-show-notes/episode-141-road-to-agi-beyond-part-1)
 - Data primarily sourced from the [Artificial Intelligence Show Episode 141](https://www.marketingaiinstitute.com/podcast-show-notes/episode-141-road-to-agi-beyond-part-1), [YouTube video](https://www.youtube.com/watch?v=SUAuB5g_oCw&t=653s), associated materials, and historical AI milestones
 - Historical AI milestone information from various academic and industry sources
-- Text-to-speech functionality powered by Elevenlabs API via Netlify Functions
+- Text-to-speech functionality powered by OpenAI's TTS API via Netlify Functions
 
 ## License
 
