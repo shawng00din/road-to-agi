@@ -10,6 +10,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const playAllButton = document.getElementById('play-all');
     let currentPlayingIndex = -1;
     const timelineItems = document.querySelectorAll('.timeline-item');
+    
+    // Debug functionality - only active when ?debug=true is in URL
+    const debugEnabled = new URLSearchParams(window.location.search).get('debug') === 'true';
+    const debugPanel = document.getElementById('debug-panel');
+    const debugLog = document.getElementById('debug-log');
+    
+    // Display the debug panel if debug is enabled
+    if (debugEnabled && debugPanel) {
+        debugPanel.style.display = 'block';
+        debug('Debug mode enabled. Device: ' + navigator.userAgent);
+    }
+    
+    // Function to log debug messages
+    function debug(message, error = false) {
+        if (!debugEnabled) return;
+        
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = document.createElement('div');
+        logEntry.style.borderBottom = '1px solid rgba(255,255,255,0.2)';
+        logEntry.style.padding = '3px 0';
+        logEntry.style.fontSize = '11px';
+        logEntry.style.color = error ? '#ff6b6b' : '#ffffff';
+        logEntry.textContent = `[${timestamp}] ${message}`;
+        
+        if (debugLog) {
+            debugLog.appendChild(logEntry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+        
+        // Also log to console
+        if (error) {
+            console.error(message);
+        } else {
+            console.log(message);
+        }
+    }
 
     // Initialize IndexedDB
     const initDB = () => {
@@ -180,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to play audio
     const playAudio = async (base64Audio, button) => {
-        console.log('Creating audio from base64...');
+        debug('Creating audio from base64...');
         
         return new Promise((resolve, reject) => {
             try {
@@ -193,12 +229,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const audioBlob = new Blob([arrayBuffer], { type: 'audio/mp3' });
                 const audioUrl = URL.createObjectURL(audioBlob);
+                debug('Created audio URL from blob');
                 
                 const audio = new Audio(audioUrl);
                 currentAudio = audio;
                 
+                audio.addEventListener('error', (e) => {
+                    debug(`Audio error: ${e.type}`, true);
+                    reject(e);
+                });
+                
+                audio.addEventListener('canplaythrough', () => {
+                    debug('Audio ready to play through');
+                });
+                
                 audio.addEventListener('ended', () => {
-                    console.log('Audio playback ended');
+                    debug('Audio playback ended');
                     button.classList.remove('speaking');
                     currentlyPlayingButton = null;
                     currentAudio = null;
@@ -216,11 +262,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                             
                             // Small delay before playing next
+                            debug(`Moving to next item ${nextIndex+1}`);
                             setTimeout(() => {
                                 playNextItem(nextIndex);
                             }, 1000);
                         } else {
                             // We're done, reset play all state
+                            debug('Reached end of timeline, stopping playback');
                             playAllActive = false;
                             playAllButton.classList.remove('playing');
                             playAllButton.innerHTML = '<i class="fas fa-play"></i> Play All';
@@ -238,18 +286,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     resolve();
                 });
 
-                audio.addEventListener('error', (e) => {
-                    console.error('Audio error:', e);
-                    reject(e);
-                });
+                // Add specific handling for mobile devices
+                if (/Mobi|Android/i.test(navigator.userAgent)) {
+                    debug('Setting up mobile audio playback');
+                    // Ensure audio is ready to play
+                    audio.preload = 'auto';
+                    // Force audio to be loaded in cache
+                    audio.load();
+                }
 
+                debug('Starting audio playback');
                 audio.volume = 1.0;
                 audio.play().catch(error => {
-                    console.error('Audio playback failed:', error);
+                    debug(`Audio playback failed: ${error.message}`, true);
                     reject(error);
                 });
             } catch (error) {
-                console.error('Error in audio creation/playback:', error);
+                debug(`Error in audio creation: ${error.message}`, true);
                 reject(error);
             }
         });
@@ -363,6 +416,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        debug(`Starting to play item ${index+1} of ${timelineItems.length}`);
+
         // Update the current index
         currentPlayingIndex = index;
         
@@ -393,6 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Wait for scroll
         await new Promise(resolve => setTimeout(resolve, 500));
+        debug('Scroll complete, preparing audio');
         
         // Get speak button and trigger click to play audio
         const speakButton = item.querySelector('.speak-button');
@@ -404,10 +460,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectedVoice = voiceSelect.value;
             
             try {
+                debug(`Attempting to play audio for item ${index+1} with voice ${selectedVoice}`);
                 // Try to get audio from cache first
-                let audioData = await getFromCache(textToSpeak, selectedVoice);
+                let audioData = null;
+                try {
+                    audioData = await getFromCache(textToSpeak, selectedVoice);
+                    if (audioData) {
+                        debug('Using cached audio');
+                    } else {
+                        debug('No cached audio found');
+                    }
+                } catch (cacheError) {
+                    debug(`Cache error: ${cacheError.message}`, true);
+                }
                 
                 if (!audioData) {
+                    debug('Fetching audio from API...');
+                    
+                    // For mobile, add a small delay to ensure network connections are handled properly
+                    if (/Mobi|Android/i.test(navigator.userAgent)) {
+                        debug('Mobile device detected, adding delay');
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                    }
+                    
                     const response = await fetch('/.netlify/functions/text-to-speech', {
                         method: 'POST',
                         headers: {
@@ -420,23 +495,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     if (!response.ok) {
-                        throw new Error('Failed to generate speech');
+                        throw new Error(`API error: ${response.status}`);
                     }
 
+                    debug('API response received');
                     const data = await response.json();
                     audioData = data.audio;
-                    await saveToCache(textToSpeak, selectedVoice, audioData);
+                    
+                    // Save to cache for future use
+                    try {
+                        await saveToCache(textToSpeak, selectedVoice, audioData);
+                        debug('Audio saved to cache');
+                    } catch (cacheError) {
+                        debug(`Failed to cache: ${cacheError.message}`, true);
+                    }
                 }
 
                 // Play audio
+                debug('Starting audio playback');
                 await playAudio(audioData, speakButton);
+                debug(`Audio playback for item ${index+1} complete`);
+                
             } catch (error) {
-                console.error('Error playing item:', error);
+                debug(`Error playing item ${index+1}: ${error.message}`, true);
                 speakButton.classList.remove('speaking');
                 currentlyPlayingButton = null;
                 
                 // Continue to next item if there's an error
                 if (playAllActive) {
+                    debug(`Advancing to next item ${index+2} despite error`);
                     setTimeout(() => {
                         playNextItem(index + 1);
                     }, 1000);
