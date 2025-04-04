@@ -81,16 +81,18 @@ If you modify timeline content, you'll need to update the audio files:
 
 1. **Prerequisites**:
    - Ensure you have Node.js installed
-   - Create a `.env` file with your OpenAI API key: `OPENAI_API_KEY=your_key_here`
+   - For local generation: Create a `.env` file with your OpenAI API key: `OPENAI_API_KEY=your_key_here`
+   - For Netlify deployment: The API key is already set up in Netlify environment variables
 
-2. **Generate Audio Locally**:
+2. **Generate Audio Locally** (optional):
    ```bash
    npm install             # Install dependencies
    npm run generate-audio  # Generate audio files
    ```
 
-3. **Automatic Generation**:
+3. **Automatic Generation on Netlify**:
    - Audio is automatically generated during Netlify builds
+   - Netlify uses your environment variables for the OpenAI API key
    - Files are stored in the `public/audio` directory
    - The system only regenerates audio for changed content
 
@@ -98,6 +100,7 @@ If you modify timeline content, you'll need to update the audio files:
    - The script is designed to minimize API calls
    - It tracks content hashes to avoid regenerating unchanged audio
    - Each API call uses OpenAI's text-to-speech service which has associated costs
+   - Most users will load pre-generated static files, not calling the API
 
 ## Credits
 

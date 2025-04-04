@@ -3,9 +3,25 @@ const path = require('path');
 const axios = require('axios');
 const { JSDOM } = require('jsdom');
 const crypto = require('crypto');
-require('dotenv').config();
 
+// Load environment variables from .env file if it exists (for local development)
+try {
+    require('dotenv').config();
+} catch (err) {
+    console.log('dotenv module not found, using system environment variables');
+}
+
+// Get the API key from environment variables
+// On Netlify, this will be automatically available from the Netlify environment variables
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+// Check if API key is available
+if (!OPENAI_API_KEY) {
+    console.error('⚠️ ERROR: OPENAI_API_KEY environment variable is not set.');
+    console.error('Please set up your OpenAI API key in Netlify environment variables or in a local .env file');
+    process.exit(1);
+}
+
 const VOICES = ['fable', 'nova']; // male and female voices
 const CONTENT_HASH_FILE = path.join(__dirname, '../public/audio/content-hashes.json');
 
