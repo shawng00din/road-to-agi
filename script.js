@@ -459,30 +459,82 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 debug(`Attempting to play audio for item ${index+1} with voice ${selectedVoice}`);
                 
-                // Try to get audio from cache first
                 let audioData = null;
-                try {
-                    audioData = await getFromCache(textToSpeak, selectedVoice);
-                    if (audioData) {
-                        debug('Using cached audio');
-                    } else {
-                        debug('No cached audio found');
-                    }
-                } catch (cacheError) {
-                    debug(`Cache error: ${cacheError.message}`, true);
-                }
                 
-                if (!audioData) {
-                    // Instead of calling the API, try to load from the static URL
-                    const staticAudioUrl = getStaticAudioUrl(itemId, selectedVoice);
-                    debug(`Loading audio from static URL: ${staticAudioUrl}`);
+                // Try to load from static URL first (pre-generated files)
+                const staticAudioUrl = getStaticAudioUrl(itemId, selectedVoice);
+                debug(`Loading audio from static URL: ${staticAudioUrl}`);
+                
+                try {
+                    const response = await fetch(staticAudioUrl);
                     
-                    try {
-                        const response = await fetch(staticAudioUrl);
+                    if (response.ok) {
+                        // If static file exists, convert it to base64 for playback
+                        debug('Static audio file loaded successfully');
+                        const blob = await response.blob();
                         
-                        if (!response.ok) {
-                            debug(`Static audio not found, falling back to API`, true);
-                            // Fallback to the API if the static file doesn't exist
+                        // Convert blob to base64
+                        const reader = new FileReader();
+                        audioData = await new Promise((resolve) => {
+                            reader.onloadend = () => {
+                                // The result looks like "data:audio/mp3;base64,ACTUAL_BASE64"
+                                // We just want the base64 part
+                                const base64 = reader.result.split(',')[1];
+                                resolve(base64);
+                            };
+                            reader.readAsDataURL(blob);
+                        });
+                        
+                        // Save to cache for future use
+                        try {
+                            await saveToCache(textToSpeak, selectedVoice, audioData);
+                            debug('Static audio saved to cache');
+                        } catch (cacheError) {
+                            debug(`Failed to cache static audio: ${cacheError.message}`, true);
+                        }
+                    } else {
+                        debug(`Static audio not found (${response.status}), checking cache`, true);
+                        
+                        // If static file doesn't exist, try cache as fallback
+                        try {
+                            audioData = await getFromCache(textToSpeak, selectedVoice);
+                            if (audioData) {
+                                debug('Using cached audio');
+                            } else {
+                                debug('No cached audio found, falling back to API');
+                                
+                                // Fallback to API if neither static file nor cache has the audio
+                                const apiResponse = await fetch('/.netlify/functions/text-to-speech', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                        text: textToSpeak,
+                                        voice: selectedVoice
+                                    })
+                                });
+                                
+                                if (!apiResponse.ok) {
+                                    throw new Error(`API error: ${apiResponse.status}`);
+                                }
+                                
+                                debug('API response received');
+                                const data = await apiResponse.json();
+                                audioData = data.audio;
+                                
+                                // Save to cache for future use
+                                try {
+                                    await saveToCache(textToSpeak, selectedVoice, audioData);
+                                    debug('Audio saved to cache');
+                                } catch (cacheError) {
+                                    debug(`Failed to cache: ${cacheError.message}`, true);
+                                }
+                            }
+                        } catch (cacheError) {
+                            debug(`Cache error: ${cacheError.message}, falling back to API`, true);
+                            
+                            // Fallback to the API if both static and cache fail
                             const apiResponse = await fetch('/.netlify/functions/text-to-speech', {
                                 method: 'POST',
                                 headers: {
@@ -509,35 +561,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             } catch (cacheError) {
                                 debug(`Failed to cache: ${cacheError.message}`, true);
                             }
-                        } else {
-                            // If static file exists, convert it to base64 for the same API format
-                            debug('Static audio file loaded successfully');
-                            const blob = await response.blob();
-                            
-                            // Convert blob to base64
-                            const reader = new FileReader();
-                            audioData = await new Promise((resolve) => {
-                                reader.onloadend = () => {
-                                    // The result looks like "data:audio/mp3;base64,ACTUAL_BASE64"
-                                    // We just want the base64 part
-                                    const base64 = reader.result.split(',')[1];
-                                    resolve(base64);
-                                };
-                                reader.readAsDataURL(blob);
-                            });
-                            
-                            // Save to cache
-                            try {
-                                await saveToCache(textToSpeak, selectedVoice, audioData);
-                                debug('Static audio saved to cache');
-                            } catch (cacheError) {
-                                debug(`Failed to cache static audio: ${cacheError.message}`, true);
-                            }
                         }
-                    } catch (fetchError) {
-                        debug(`Error fetching audio: ${fetchError.message}`, true);
-                        throw fetchError;
                     }
+                } catch (fetchError) {
+                    debug(`Error fetching audio: ${fetchError.message}`, true);
+                    throw fetchError;
                 }
 
                 // Play audio
@@ -599,25 +627,82 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.classList.add('speaking');
                 currentlyPlayingButton = button;
 
-                // Try to get audio from cache first
                 let audioData = null;
-                try {
-                    audioData = await getFromCache(textToSpeak, selectedVoice);
-                } catch (cacheError) {
-                    debug(`Cache error: ${cacheError.message}`, true);
-                }
                 
-                if (!audioData) {
-                    // Try to load from static URL first
-                    const staticAudioUrl = getStaticAudioUrl(itemId, selectedVoice);
-                    debug(`Loading audio from static URL: ${staticAudioUrl}`);
+                // Try to load from static URL first (pre-generated files)
+                const staticAudioUrl = getStaticAudioUrl(itemId, selectedVoice);
+                debug(`Loading audio from static URL: ${staticAudioUrl}`);
+                
+                try {
+                    const response = await fetch(staticAudioUrl);
                     
-                    try {
-                        const response = await fetch(staticAudioUrl);
+                    if (response.ok) {
+                        // If static file exists, convert it to base64 for playback
+                        debug('Static audio file loaded successfully');
+                        const blob = await response.blob();
                         
-                        if (!response.ok) {
-                            debug(`Static audio not found, falling back to API`, true);
-                            // Fallback to the API if the static file doesn't exist
+                        // Convert blob to base64
+                        const reader = new FileReader();
+                        audioData = await new Promise((resolve) => {
+                            reader.onloadend = () => {
+                                // The result looks like "data:audio/mp3;base64,ACTUAL_BASE64"
+                                // We just want the base64 part
+                                const base64 = reader.result.split(',')[1];
+                                resolve(base64);
+                            };
+                            reader.readAsDataURL(blob);
+                        });
+                        
+                        // Save to cache for future use
+                        try {
+                            await saveToCache(textToSpeak, selectedVoice, audioData);
+                            debug('Static audio saved to cache');
+                        } catch (cacheError) {
+                            debug(`Failed to cache static audio: ${cacheError.message}`, true);
+                        }
+                    } else {
+                        debug(`Static audio not found (${response.status}), checking cache`, true);
+                        
+                        // If static file doesn't exist, try cache as fallback
+                        try {
+                            audioData = await getFromCache(textToSpeak, selectedVoice);
+                            if (audioData) {
+                                debug('Using cached audio');
+                            } else {
+                                debug('No cached audio found, falling back to API');
+                                
+                                // Fallback to API if neither static file nor cache has the audio
+                                const apiResponse = await fetch('/.netlify/functions/text-to-speech', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                        text: textToSpeak,
+                                        voice: selectedVoice
+                                    })
+                                });
+                                
+                                if (!apiResponse.ok) {
+                                    throw new Error(`API error: ${apiResponse.status}`);
+                                }
+                                
+                                debug('API response received');
+                                const data = await apiResponse.json();
+                                audioData = data.audio;
+                                
+                                // Save to cache for future use
+                                try {
+                                    await saveToCache(textToSpeak, selectedVoice, audioData);
+                                    debug('Audio saved to cache');
+                                } catch (cacheError) {
+                                    debug(`Failed to cache: ${cacheError.message}`, true);
+                                }
+                            }
+                        } catch (cacheError) {
+                            debug(`Cache error: ${cacheError.message}, falling back to API`, true);
+                            
+                            // Fallback to the API if both static and cache fail
                             const apiResponse = await fetch('/.netlify/functions/text-to-speech', {
                                 method: 'POST',
                                 headers: {
@@ -630,43 +715,25 @@ document.addEventListener('DOMContentLoaded', () => {
                             });
                             
                             if (!apiResponse.ok) {
-                                const errorData = await apiResponse.json();
-                                debug(`API Error: ${errorData.details || 'Unknown error'}`, true);
-                                throw new Error(errorData.details || 'Failed to generate speech');
+                                throw new Error(`API error: ${apiResponse.status}`);
                             }
-
-                            debug('Received API response');
+                            
+                            debug('API response received');
                             const data = await apiResponse.json();
                             audioData = data.audio;
-                        } else {
-                            // If static file exists, convert it to base64 for the same API format
-                            debug('Static audio file loaded successfully');
-                            const blob = await response.blob();
                             
-                            // Convert blob to base64
-                            const reader = new FileReader();
-                            audioData = await new Promise((resolve) => {
-                                reader.onloadend = () => {
-                                    // The result looks like "data:audio/mp3;base64,ACTUAL_BASE64"
-                                    // We just want the base64 part
-                                    const base64 = reader.result.split(',')[1];
-                                    resolve(base64);
-                                };
-                                reader.readAsDataURL(blob);
-                            });
+                            // Save to cache for future use
+                            try {
+                                await saveToCache(textToSpeak, selectedVoice, audioData);
+                                debug('Audio saved to cache');
+                            } catch (cacheError) {
+                                debug(`Failed to cache: ${cacheError.message}`, true);
+                            }
                         }
-                        
-                        // Save to cache for future use
-                        try {
-                            await saveToCache(textToSpeak, selectedVoice, audioData);
-                            debug('Audio saved to cache');
-                        } catch (cacheError) {
-                            debug(`Failed to cache: ${cacheError.message}`, true);
-                        }
-                    } catch (fetchError) {
-                        debug(`Error fetching audio: ${fetchError.message}`, true);
-                        throw fetchError;
                     }
+                } catch (fetchError) {
+                    debug(`Error fetching audio: ${fetchError.message}`, true);
+                    throw fetchError;
                 }
 
                 await playAudio(audioData, button);
