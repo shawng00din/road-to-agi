@@ -380,107 +380,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Text-to-Speech functionality
-    const speakButtons = document.querySelectorAll('.speak-button');
+    // Function to get a unique ID for a timeline item based on its content
+    function getTimelineItemId(content) {
+        const year = content.querySelector('.year').textContent.trim();
+        const title = content.querySelector('h3').textContent.trim();
+        // Create a simple slug from the title (lowercase, spaces to hyphens, remove special chars)
+        const titleSlug = title.toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/[\s_-]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        return `${year}-${titleSlug}`;
+    }
 
-    speakButtons.forEach(button => {
-        button.addEventListener('click', async () => {
-            // If this is part of a Play All, don't interrupt the sequence
-            if (playAllActive && currentlyPlayingButton !== button) {
-                return;
-            }
-            
-            console.log('Speak button clicked');
-            
-            if (button.classList.contains('speaking')) {
-                console.log('Stopping current speech');
-                stopSpeaking();
-                return;
-            }
-
-            stopSpeaking();
-
-            // If this was part of a Play All sequence, cancel the sequence
-            if (playAllActive) {
-                playAllActive = false;
-                playAllButton.classList.remove('playing');
-                playAllButton.innerHTML = '<i class="fas fa-play"></i> Play All';
-                currentPlayingIndex = -1;
-            }
-
-            const content = button.closest('.timeline-content');
-            const textToSpeak = gatherTextContent(content);
-            const selectedVoice = voiceSelect.value;
-            
-            try {
-                console.log('Setting button to speaking state');
-                button.classList.add('speaking');
-                currentlyPlayingButton = button;
-
-                // Try to get audio from cache first
-                let audioData = await getFromCache(textToSpeak, selectedVoice);
-                
-                if (!audioData) {
-                    console.log('Calling text-to-speech API...');
-                    const response = await fetch('/.netlify/functions/text-to-speech', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            text: textToSpeak,
-                            voice: selectedVoice
-                        })
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        console.error('API Error:', errorData);
-                        throw new Error(errorData.details || 'Failed to generate speech');
-                    }
-
-                    console.log('Received API response');
-                    const data = await response.json();
-                    audioData = data.audio;
-                    
-                    // Save to cache for future use
-                    await saveToCache(textToSpeak, selectedVoice, audioData);
-                }
-
-                await playAudio(audioData, button);
-            } catch (error) {
-                console.error('Error in speech generation:', error);
-                button.classList.remove('speaking');
-                currentlyPlayingButton = null;
-                currentAudio = null;
-                alert('Failed to generate speech: ' + error.message);
-            }
-        });
-    });
-
-    // Add voice change handler to clear cache when voice changes
-    voiceSelect.addEventListener('change', () => {
-        if (currentlyPlayingButton) {
-            // Save the current playback state before stopping
-            const wasPlayingAll = playAllActive;
-            const currentIndex = currentPlayingIndex;
-            
-            // Stop current audio
-            stopSpeaking();
-            
-            // If we were in "Play All" mode, restart with the new voice
-            if (wasPlayingAll && currentIndex >= 0) {
-                // Brief delay to allow audio to stop cleanly
-                setTimeout(() => {
-                    // Make sure we're still in play all mode
-                    if (playAllActive) {
-                        // Start playing the current item again with new voice
-                        playNextItem(currentIndex);
-                    }
-                }, 200);
-            }
-        }
-    });
+    // Function to get the static audio URL for a timeline item
+    function getStaticAudioUrl(itemId, voice) {
+        // Try without the public prefix first
+        return `https://roadtoagi.netlify.app/audio/${voice}/${itemId}.mp3`;
+    }
 
     // Simplified function to play a specific item
     async function playNextItem(index) {
@@ -530,9 +446,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const textToSpeak = gatherTextContent(content);
             const selectedVoice = voiceSelect.value;
+            const itemId = getTimelineItemId(content);
             
             try {
                 debug(`Attempting to play audio for item ${index+1} with voice ${selectedVoice}`);
+                
                 // Try to get audio from cache first
                 let audioData = null;
                 try {
@@ -547,39 +465,70 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 if (!audioData) {
-                    debug('Fetching audio from API...');
+                    // Instead of calling the API, try to load from the static URL
+                    const staticAudioUrl = getStaticAudioUrl(itemId, selectedVoice);
+                    debug(`Loading audio from static URL: ${staticAudioUrl}`);
                     
-                    // For mobile, add a small delay to ensure network connections are handled properly
-                    if (/Mobi|Android/i.test(navigator.userAgent)) {
-                        debug('Mobile device detected, adding delay');
-                        await new Promise(resolve => setTimeout(resolve, 300));
-                    }
-                    
-                    const response = await fetch('/.netlify/functions/text-to-speech', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            text: textToSpeak,
-                            voice: selectedVoice
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`API error: ${response.status}`);
-                    }
-
-                    debug('API response received');
-                    const data = await response.json();
-                    audioData = data.audio;
-                    
-                    // Save to cache for future use
                     try {
-                        await saveToCache(textToSpeak, selectedVoice, audioData);
-                        debug('Audio saved to cache');
-                    } catch (cacheError) {
-                        debug(`Failed to cache: ${cacheError.message}`, true);
+                        const response = await fetch(staticAudioUrl);
+                        
+                        if (!response.ok) {
+                            debug(`Static audio not found, falling back to API`, true);
+                            // Fallback to the API if the static file doesn't exist
+                            const apiResponse = await fetch('/.netlify/functions/text-to-speech', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    text: textToSpeak,
+                                    voice: selectedVoice
+                                })
+                            });
+                            
+                            if (!apiResponse.ok) {
+                                throw new Error(`API error: ${apiResponse.status}`);
+                            }
+                            
+                            debug('API response received');
+                            const data = await apiResponse.json();
+                            audioData = data.audio;
+                            
+                            // Save to cache for future use
+                            try {
+                                await saveToCache(textToSpeak, selectedVoice, audioData);
+                                debug('Audio saved to cache');
+                            } catch (cacheError) {
+                                debug(`Failed to cache: ${cacheError.message}`, true);
+                            }
+                        } else {
+                            // If static file exists, convert it to base64 for the same API format
+                            debug('Static audio file loaded successfully');
+                            const blob = await response.blob();
+                            
+                            // Convert blob to base64
+                            const reader = new FileReader();
+                            audioData = await new Promise((resolve) => {
+                                reader.onloadend = () => {
+                                    // The result looks like "data:audio/mp3;base64,ACTUAL_BASE64"
+                                    // We just want the base64 part
+                                    const base64 = reader.result.split(',')[1];
+                                    resolve(base64);
+                                };
+                                reader.readAsDataURL(blob);
+                            });
+                            
+                            // Save to cache
+                            try {
+                                await saveToCache(textToSpeak, selectedVoice, audioData);
+                                debug('Static audio saved to cache');
+                            } catch (cacheError) {
+                                debug(`Failed to cache static audio: ${cacheError.message}`, true);
+                            }
+                        }
+                    } catch (fetchError) {
+                        debug(`Error fetching audio: ${fetchError.message}`, true);
+                        throw fetchError;
                     }
                 }
 
@@ -603,6 +552,149 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
+    // Text-to-Speech functionality for individual speak buttons
+    const speakButtons = document.querySelectorAll('.speak-button');
+
+    speakButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+            // If this is part of a Play All, don't interrupt the sequence
+            if (playAllActive && currentlyPlayingButton !== button) {
+                return;
+            }
+            
+            debug('Speak button clicked');
+            
+            if (button.classList.contains('speaking')) {
+                debug('Stopping current speech');
+                stopSpeaking();
+                return;
+            }
+
+            stopSpeaking();
+
+            // If this was part of a Play All sequence, cancel the sequence
+            if (playAllActive) {
+                playAllActive = false;
+                playAllButton.classList.remove('playing');
+                playAllButton.innerHTML = '<i class="fas fa-play"></i> Play All';
+                currentPlayingIndex = -1;
+            }
+
+            const content = button.closest('.timeline-content');
+            const textToSpeak = gatherTextContent(content);
+            const selectedVoice = voiceSelect.value;
+            const itemId = getTimelineItemId(content);
+            
+            try {
+                debug('Setting button to speaking state');
+                button.classList.add('speaking');
+                currentlyPlayingButton = button;
+
+                // Try to get audio from cache first
+                let audioData = null;
+                try {
+                    audioData = await getFromCache(textToSpeak, selectedVoice);
+                } catch (cacheError) {
+                    debug(`Cache error: ${cacheError.message}`, true);
+                }
+                
+                if (!audioData) {
+                    // Try to load from static URL first
+                    const staticAudioUrl = getStaticAudioUrl(itemId, selectedVoice);
+                    debug(`Loading audio from static URL: ${staticAudioUrl}`);
+                    
+                    try {
+                        const response = await fetch(staticAudioUrl);
+                        
+                        if (!response.ok) {
+                            debug(`Static audio not found, falling back to API`, true);
+                            // Fallback to the API if the static file doesn't exist
+                            const apiResponse = await fetch('/.netlify/functions/text-to-speech', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    text: textToSpeak,
+                                    voice: selectedVoice
+                                })
+                            });
+                            
+                            if (!apiResponse.ok) {
+                                const errorData = await apiResponse.json();
+                                debug(`API Error: ${errorData.details || 'Unknown error'}`, true);
+                                throw new Error(errorData.details || 'Failed to generate speech');
+                            }
+
+                            debug('Received API response');
+                            const data = await apiResponse.json();
+                            audioData = data.audio;
+                        } else {
+                            // If static file exists, convert it to base64 for the same API format
+                            debug('Static audio file loaded successfully');
+                            const blob = await response.blob();
+                            
+                            // Convert blob to base64
+                            const reader = new FileReader();
+                            audioData = await new Promise((resolve) => {
+                                reader.onloadend = () => {
+                                    // The result looks like "data:audio/mp3;base64,ACTUAL_BASE64"
+                                    // We just want the base64 part
+                                    const base64 = reader.result.split(',')[1];
+                                    resolve(base64);
+                                };
+                                reader.readAsDataURL(blob);
+                            });
+                        }
+                        
+                        // Save to cache for future use
+                        try {
+                            await saveToCache(textToSpeak, selectedVoice, audioData);
+                            debug('Audio saved to cache');
+                        } catch (cacheError) {
+                            debug(`Failed to cache: ${cacheError.message}`, true);
+                        }
+                    } catch (fetchError) {
+                        debug(`Error fetching audio: ${fetchError.message}`, true);
+                        throw fetchError;
+                    }
+                }
+
+                await playAudio(audioData, button);
+            } catch (error) {
+                debug(`Error in speech generation: ${error.message}`, true);
+                button.classList.remove('speaking');
+                currentlyPlayingButton = null;
+                currentAudio = null;
+                alert('Failed to generate speech: ' + error.message);
+            }
+        });
+    });
+
+    // Add voice change handler to clear cache when voice changes
+    voiceSelect.addEventListener('change', () => {
+        if (currentlyPlayingButton) {
+            // Save the current playback state before stopping
+            const wasPlayingAll = playAllActive;
+            const currentIndex = currentPlayingIndex;
+            
+            // Stop current audio
+            stopSpeaking();
+            
+            // If we were in "Play All" mode, restart with the new voice
+            if (wasPlayingAll && currentIndex >= 0) {
+                // Brief delay to allow audio to stop cleanly
+                setTimeout(() => {
+                    // Make sure we're still in play all mode
+                    if (playAllActive) {
+                        // Start playing the current item again with new voice
+                        playNextItem(currentIndex);
+                    }
+                }, 200);
+            }
+        }
+    });
 
     // Add click event listener for the Play All button
     playAllButton.addEventListener('click', () => {

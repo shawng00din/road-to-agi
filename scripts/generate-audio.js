@@ -23,7 +23,7 @@ if (!OPENAI_API_KEY) {
 }
 
 const VOICES = ['fable', 'nova']; // male and female voices
-const CONTENT_HASH_FILE = path.join(__dirname, '../public/audio/content-hashes.json');
+const CONTENT_HASH_FILE = path.join(__dirname, '../audio/content-hashes.json');
 
 // Helper function to extract text from timeline items
 function gatherTextContent(content) {
@@ -166,7 +166,7 @@ async function generateAllAudioFiles() {
                 
                 // Check if audio files exist for all voices
                 for (const voice of VOICES) {
-                    const outputFile = path.join(__dirname, `../public/audio/${voice}/${itemId}.mp3`);
+                    const outputFile = path.join(__dirname, `../audio/${voice}/${itemId}.mp3`);
                     if (!fs.existsSync(outputFile)) {
                         console.log(`Audio file missing for voice ${voice}, will regenerate`);
                         filesExist = false;
@@ -183,7 +183,7 @@ async function generateAllAudioFiles() {
             
             // Generate audio for each voice
             for (const voice of VOICES) {
-                const outputDir = path.join(__dirname, `../public/audio/${voice}`);
+                const outputDir = path.join(__dirname, `../audio/${voice}`);
                 const outputFile = path.join(outputDir, `${itemId}.mp3`);
                 
                 // Regenerate if content has changed or file doesn't exist
