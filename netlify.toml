@@ -1,6 +1,7 @@
 [build]
   functions = "functions"
   publish = "."
+  command = "node scripts/generate-audio.js"
 
 [functions]
   node_bundler = "esbuild"
