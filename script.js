@@ -22,6 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
         debug('Debug mode enabled. Device: ' + navigator.userAgent);
     }
     
+    // Create a single reusable audio element for iOS compatibility
+    const globalAudio = new Audio();
+    let audioQueue = [];
+    let isPlayingQueue = false;
+    
     // Function to log debug messages
     function debug(message, error = false) {
         if (!debugEnabled) return;
@@ -201,20 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return fullText;
     };
 
-    const stopSpeaking = () => {
-        console.log('Stopping current playback...');
-        if (currentlyPlayingButton) {
-            currentlyPlayingButton.classList.remove('speaking');
-            currentlyPlayingButton = null;
-        }
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
-            currentAudio = null;
-        }
-    };
-
-    // Function to play audio
+    // Function to play audio - modified for iOS compatibility
     const playAudio = async (base64Audio, button) => {
         debug('Creating audio from base64...');
         
@@ -231,76 +223,156 @@ document.addEventListener('DOMContentLoaded', () => {
                 const audioUrl = URL.createObjectURL(audioBlob);
                 debug('Created audio URL from blob');
                 
-                const audio = new Audio(audioUrl);
-                currentAudio = audio;
-                
-                audio.addEventListener('error', (e) => {
-                    debug(`Audio error: ${e.type}`, true);
-                    reject(e);
-                });
-                
-                audio.addEventListener('canplaythrough', () => {
-                    debug('Audio ready to play through');
-                });
-                
-                audio.addEventListener('ended', () => {
-                    debug('Audio playback ended');
-                    button.classList.remove('speaking');
-                    currentlyPlayingButton = null;
-                    currentAudio = null;
-                    URL.revokeObjectURL(audioUrl);
-
-                    // If we're in "play all" mode, move to the next item
-                    if (playAllActive) {
-                        const nextIndex = currentPlayingIndex + 1;
-                        if (nextIndex < timelineItems.length) {
-                            // Remove active class from current item
-                            const currentItem = timelineItems[currentPlayingIndex];
-                            const currentContent = currentItem.querySelector('.timeline-content');
-                            if (currentContent) {
-                                currentContent.classList.remove('active');
-                            }
-                            
-                            // Small delay before playing next
-                            debug(`Moving to next item ${nextIndex+1}`);
-                            setTimeout(() => {
-                                playNextItem(nextIndex);
-                            }, 1000);
-                        } else {
-                            // We're done, reset play all state
-                            debug('Reached end of timeline, stopping playback');
-                            playAllActive = false;
-                            playAllButton.classList.remove('playing');
-                            playAllButton.innerHTML = '<i class="fas fa-play"></i> Play All';
-                            currentPlayingIndex = -1;
-                            
-                            // Remove active class from last item
-                            const lastItem = timelineItems[timelineItems.length - 1];
-                            const lastContent = lastItem.querySelector('.timeline-content');
-                            if (lastContent) {
-                                lastContent.classList.remove('active');
-                            }
-                        }
+                // If on iOS/mobile, use the global audio element
+                if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                    debug('Using global audio element for mobile compatibility');
+                    
+                    // Clean up any previous audio
+                    if (currentAudio) {
+                        currentAudio = null;
                     }
                     
-                    resolve();
-                });
+                    // Set up the global audio element
+                    globalAudio.src = audioUrl;
+                    globalAudio.preload = 'auto';
+                    currentAudio = globalAudio;
+                    
+                    // Set up event listeners
+                    const endedHandler = () => {
+                        debug('Audio playback ended');
+                        globalAudio.removeEventListener('ended', endedHandler);
+                        button.classList.remove('speaking');
+                        currentlyPlayingButton = null;
+                        URL.revokeObjectURL(audioUrl);
+                        
+                        // If we're in "play all" mode, process the queue
+                        if (playAllActive) {
+                            const nextIndex = currentPlayingIndex + 1;
+                            if (nextIndex < timelineItems.length) {
+                                // Remove active class from current item
+                                const currentItem = timelineItems[currentPlayingIndex];
+                                const currentContent = currentItem.querySelector('.timeline-content');
+                                if (currentContent) {
+                                    currentContent.classList.remove('active');
+                                }
+                                
+                                // Queue up the next item
+                                debug(`Queueing next item ${nextIndex+1}`);
+                                // We need to keep the Play All active for the next playback
+                                setTimeout(() => {
+                                    playNextItem(nextIndex);
+                                }, 1000);
+                            } else {
+                                // We're done, reset play all state
+                                debug('Reached end of timeline, stopping playback');
+                                playAllActive = false;
+                                playAllButton.classList.remove('playing');
+                                playAllButton.innerHTML = '<i class="fas fa-play"></i> Play All';
+                                currentPlayingIndex = -1;
+                                
+                                // Remove active class from last item
+                                const lastItem = timelineItems[timelineItems.length - 1];
+                                const lastContent = lastItem.querySelector('.timeline-content');
+                                if (lastContent) {
+                                    lastContent.classList.remove('active');
+                                }
+                            }
+                        }
+                        
+                        resolve();
+                    };
+                    
+                    globalAudio.addEventListener('ended', endedHandler);
+                    
+                    globalAudio.addEventListener('error', (e) => {
+                        debug(`Audio error: ${e.type}`, true);
+                        reject(e);
+                    });
+                    
+                    debug('Starting audio playback on mobile');
+                    globalAudio.play().catch(error => {
+                        debug(`Mobile audio playback failed: ${error.message}`, true);
+                        
+                        // Show user a message about enabling autoplay on the first error
+                        if (currentPlayingIndex === 0) {
+                            alert("Please enable autoplay for this site or tap the screen to continue playback.");
+                            
+                            // Add a tap event listener to the entire document
+                            const tapHandler = () => {
+                                globalAudio.play().catch(e => {
+                                    debug(`Still couldn't play after tap: ${e.message}`, true);
+                                });
+                                document.removeEventListener('touchstart', tapHandler);
+                            };
+                            document.addEventListener('touchstart', tapHandler);
+                        }
+                        
+                        reject(error);
+                    });
+                } else {
+                    // Desktop handling (unchanged)
+                    const audio = new Audio(audioUrl);
+                    currentAudio = audio;
+                    
+                    audio.addEventListener('ended', () => {
+                        debug('Audio playback ended');
+                        button.classList.remove('speaking');
+                        currentlyPlayingButton = null;
+                        currentAudio = null;
+                        URL.revokeObjectURL(audioUrl);
 
-                // Add specific handling for mobile devices
-                if (/Mobi|Android/i.test(navigator.userAgent)) {
-                    debug('Setting up mobile audio playback');
-                    // Ensure audio is ready to play
-                    audio.preload = 'auto';
-                    // Force audio to be loaded in cache
-                    audio.load();
+                        // If we're in "play all" mode, move to the next item
+                        if (playAllActive) {
+                            const nextIndex = currentPlayingIndex + 1;
+                            if (nextIndex < timelineItems.length) {
+                                // Remove active class from current item
+                                const currentItem = timelineItems[currentPlayingIndex];
+                                const currentContent = currentItem.querySelector('.timeline-content');
+                                if (currentContent) {
+                                    currentContent.classList.remove('active');
+                                }
+                                
+                                // Small delay before playing next
+                                debug(`Moving to next item ${nextIndex+1}`);
+                                setTimeout(() => {
+                                    playNextItem(nextIndex);
+                                }, 1000);
+                            } else {
+                                // We're done, reset play all state
+                                debug('Reached end of timeline, stopping playback');
+                                playAllActive = false;
+                                playAllButton.classList.remove('playing');
+                                playAllButton.innerHTML = '<i class="fas fa-play"></i> Play All';
+                                currentPlayingIndex = -1;
+                                
+                                // Remove active class from last item
+                                const lastItem = timelineItems[timelineItems.length - 1];
+                                const lastContent = lastItem.querySelector('.timeline-content');
+                                if (lastContent) {
+                                    lastContent.classList.remove('active');
+                                }
+                            }
+                        }
+                        
+                        resolve();
+                    });
+                    
+                    audio.addEventListener('error', (e) => {
+                        debug(`Audio error: ${e.type}`, true);
+                        reject(e);
+                    });
+                    
+                    audio.addEventListener('canplaythrough', () => {
+                        debug('Audio ready to play through');
+                    });
+                    
+                    debug('Starting desktop audio playback');
+                    audio.volume = 1.0;
+                    audio.play().catch(error => {
+                        debug(`Audio playback failed: ${error.message}`, true);
+                        reject(error);
+                    });
                 }
-
-                debug('Starting audio playback');
-                audio.volume = 1.0;
-                audio.play().catch(error => {
-                    debug(`Audio playback failed: ${error.message}`, true);
-                    reject(error);
-                });
             } catch (error) {
                 debug(`Error in audio creation: ${error.message}`, true);
                 reject(error);
@@ -572,4 +644,24 @@ document.addEventListener('DOMContentLoaded', () => {
             playNextItem(0);
         }
     });
+
+    // Stop speaking function - updated for global audio
+    const stopSpeaking = () => {
+        debug('Stopping current playback...');
+        if (currentlyPlayingButton) {
+            currentlyPlayingButton.classList.remove('speaking');
+            currentlyPlayingButton = null;
+        }
+        
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            if (globalAudio) {
+                globalAudio.pause();
+                globalAudio.currentTime = 0;
+            }
+        } else if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            currentAudio = null;
+        }
+    };
 });
