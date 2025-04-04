@@ -56,13 +56,19 @@ function getTimelineItemId(content) {
     const year = content.querySelector('.year').textContent.trim();
     const title = content.querySelector('h3').textContent.trim();
     
-    // Create a simple slug from the title
-    const titleSlug = title.toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/[\s_-]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+    // Create slugs for both year and title
+    const convertToSlug = (text) => {
+        return text.toLowerCase()
+            .replace(/[^\w\s-]/g, '')  // Remove special characters
+            .replace(/\s+/g, '-')      // Replace spaces with hyphens
+            .replace(/-+/g, '-')       // Remove duplicate hyphens
+            .replace(/^-+|-+$/g, '');  // Remove leading/trailing hyphens
+    };
     
-    return `${year}-${titleSlug}`;
+    const yearSlug = convertToSlug(year);
+    const titleSlug = convertToSlug(title);
+    
+    return `${yearSlug}-${titleSlug}`;
 }
 
 // Generate a hash of the text content to detect changes

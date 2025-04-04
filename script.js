@@ -384,12 +384,20 @@ document.addEventListener('DOMContentLoaded', () => {
     function getTimelineItemId(content) {
         const year = content.querySelector('.year').textContent.trim();
         const title = content.querySelector('h3').textContent.trim();
-        // Create a simple slug from the title (lowercase, spaces to hyphens, remove special chars)
-        const titleSlug = title.toLowerCase()
-            .replace(/[^\w\s-]/g, '')
-            .replace(/[\s_-]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-        return `${year}-${titleSlug}`;
+        
+        // Create slugs for both year and title
+        const convertToSlug = (text) => {
+            return text.toLowerCase()
+                .replace(/[^\w\s-]/g, '')  // Remove special characters
+                .replace(/\s+/g, '-')      // Replace spaces with hyphens
+                .replace(/-+/g, '-')       // Remove duplicate hyphens
+                .replace(/^-+|-+$/g, '');  // Remove leading/trailing hyphens
+        };
+        
+        const yearSlug = convertToSlug(year);
+        const titleSlug = convertToSlug(title);
+        
+        return `${yearSlug}-${titleSlug}`;
     }
 
     // Function to get the static audio URL for a timeline item
