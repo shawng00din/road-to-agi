@@ -788,6 +788,9 @@
                 const password = sessionStorage.getItem('roadToAGI_adminPassword');
                 console.log("Using password from session storage");
                 
+                // Add detailed console logs for debugging
+                console.log("Timeline data to save:", JSON.stringify(timelineData).slice(0, 200) + "...");
+                
                 const response = await fetch('/.netlify/functions/save-timeline', {
                     method: 'POST',
                     headers: {
@@ -801,7 +804,11 @@
                 
                 console.log("Save response status:", response.status);
                 
-                if (!response.ok) throw new Error('Failed to save timeline data');
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("Error response:", errorText);
+                    throw new Error(`Failed to save timeline data: ${response.status} ${errorText}`);
+                }
                 
                 const data = await response.json();
                 console.log("Save response data:", data);
@@ -812,7 +819,7 @@
                 showStatusMessage('Timeline data saved successfully!', 'success');
             } catch (error) {
                 console.error('Error saving timeline data:', error);
-                showStatusMessage('Failed to save timeline data. Please try again.', 'error');
+                showStatusMessage('Failed to save timeline data. Please try again. Error: ' + error.message, 'error');
             }
         }
         

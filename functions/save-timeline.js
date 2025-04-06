@@ -49,9 +49,13 @@ exports.handler = async function(event, context) {
       };
     }
 
-    // If NetlifyBlobStore is not available (local dev), try to share with get-timeline
-    if (!NetlifyBlobStore) {
-      console.log("Using local storage for timeline data");
+    // If NetlifyBlobStore is not available or token is missing (local dev), try to share with get-timeline
+    if (!NetlifyBlobStore || !process.env.NETLIFY_BLOBS_TOKEN) {
+      if (!NetlifyBlobStore) {
+        console.log("Using local storage (NetlifyBlobStore not available)");
+      } else if (!process.env.NETLIFY_BLOBS_TOKEN) {
+        console.log("Using local storage (NETLIFY_BLOBS_TOKEN not set)");
+      }
       
       // If we have access to the get-timeline module, share the data
       if (getTimelineModule && typeof getTimelineModule.saveLocalTimelineData === 'function') {
@@ -71,14 +75,23 @@ exports.handler = async function(event, context) {
     }
 
     // Initialize the blob store
+    console.log("Initializing blob store with site ID:", context.site?.id);
+    console.log("Netlify Blobs token present:", !!process.env.NETLIFY_BLOBS_TOKEN);
+    
+    // Use the site ID from context, or fallback to environment variable or hardcoded value
+    const siteID = context.site?.id || process.env.NETLIFY_SITE_ID || 'dda06506-bfc3-48fe-bc0a-eb39914fe31e';
+    console.log("Using site ID:", siteID);
+    
     const blobStore = new NetlifyBlobStore({
-      siteID: context.site.id,
+      siteID,
       namespace: 'roadToAGI',
       token: process.env.NETLIFY_BLOBS_TOKEN
     });
 
     // Save the timeline data
+    console.log("Saving timeline data to blob store");
     await blobStore.set(TIMELINE_KEY, JSON.stringify(timelineData));
+    console.log("Timeline data saved successfully to blob store");
 
     return {
       statusCode: 200,

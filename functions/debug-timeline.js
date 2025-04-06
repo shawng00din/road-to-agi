@@ -50,14 +50,23 @@ exports.handler = async function(event, context) {
     }
 
     // Initialize the blob store
+    console.log("Debug timeline - Initializing blob store with site ID:", context.site?.id);
+    console.log("Debug timeline - Netlify Blobs token present:", !!process.env.NETLIFY_BLOBS_TOKEN);
+    
+    // Use the site ID from context, or fallback to environment variable or hardcoded value
+    const siteID = context.site?.id || process.env.NETLIFY_SITE_ID || 'dda06506-bfc3-48fe-bc0a-eb39914fe31e';
+    console.log("Debug timeline - Using site ID:", siteID);
+    
     const blobStore = new NetlifyBlobStore({
-      siteID: context.site.id,
+      siteID,
       namespace: 'roadToAGI',
       token: process.env.NETLIFY_BLOBS_TOKEN
     });
 
     // Check if timeline data exists
+    console.log("Debug timeline - Checking if timeline data exists");
     const exists = await blobStore.exists(TIMELINE_KEY);
+    console.log("Debug timeline - Timeline data exists:", exists);
     
     if (!exists) {
       // Return empty timeline structure if no data exists yet
