@@ -325,6 +325,7 @@
         <div class="admin-actions">
             <button id="add-milestone-btn" class="btn-primary"><i class="fas fa-plus"></i> Add New Milestone</button>
             <button id="save-all-btn" class="btn-success"><i class="fas fa-save"></i> Save All Changes</button>
+            <button id="test-storage-btn" class="btn-secondary"><i class="fas fa-vial"></i> Test Blob Storage</button>
             <button id="logout-btn" class="btn-secondary"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
     </div>
@@ -467,6 +468,7 @@
             // Setup event listeners
             document.getElementById('add-milestone-btn').addEventListener('click', showAddMilestoneModal);
             document.getElementById('save-all-btn').addEventListener('click', saveAllChanges);
+            document.getElementById('test-storage-btn').addEventListener('click', testBlobStorage);
             document.getElementById('logout-btn').addEventListener('click', logout);
             document.getElementById('milestone-form').addEventListener('submit', saveMilestone);
             document.getElementById('add-link-btn').addEventListener('click', addLinkField);
@@ -1016,6 +1018,43 @@
             setTimeout(() => {
                 statusElement.className = 'status-message';
             }, 5000);
+        }
+
+        async function testBlobStorage() {
+            try {
+                console.log("Testing blob storage...");
+                showStatusMessage('Testing blob storage...', 'info');
+                
+                const response = await fetch('/api/test-blob-storage', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                console.log("Test response status:", response.status);
+                
+                const data = await response.json();
+                console.log("Blob storage test results:", data);
+                
+                // Display test results
+                let resultsHtml = '<h3>Blob Storage Test Results</h3>';
+                resultsHtml += '<ul style="text-align: left; margin-top: 1rem;">';
+                
+                data.results.tests.forEach(test => {
+                    const icon = test.success ? '✅' : '❌';
+                    resultsHtml += `<li>${icon} <strong>${test.name}:</strong> ${test.details}</li>`;
+                });
+                
+                resultsHtml += '</ul>';
+                
+                if (data.results.overallSuccess) {
+                    showStatusMessage(`Blob storage test passed! ${resultsHtml}`, 'success');
+                } else {
+                    showStatusMessage(`Blob storage test failed. ${resultsHtml}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error testing blob storage:', error);
+                showStatusMessage('Failed to test blob storage. Error: ' + error.message, 'error');
+            }
         }
     </script>
 </body>
