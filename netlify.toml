@@ -1,3 +1,7 @@
+# Environment variables required:
+# - ADMIN_PASSWORD: Password for admin authentication
+# - NETLIFY_BLOBS_TOKEN: Auto-generated or provided by Netlify for Blob storage
+
 [build]
   functions = "functions"
   publish = "."
@@ -24,4 +28,10 @@
   from = "/debug-timeline"
   to = "/.netlify/functions/debug-timeline"
   status = 200
-  force = true 
+  force = true
+
+[[redirects]]
+  from = "/api/milestones"
+  to = "/.netlify/functions/create-milestone"
+  status = 200
+  method = "POST" 
