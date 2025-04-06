@@ -311,15 +311,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 } else {
                     // Desktop handling (unchanged)
-                    const audio = new Audio(audioUrl);
-                    currentAudio = audio;
-                    
-                    audio.addEventListener('ended', () => {
+                const audio = new Audio(audioUrl);
+                currentAudio = audio;
+                
+                audio.addEventListener('ended', () => {
                         debug('Audio playback ended');
-                        button.classList.remove('speaking');
-                        currentlyPlayingButton = null;
-                        currentAudio = null;
-                        URL.revokeObjectURL(audioUrl);
+                    button.classList.remove('speaking');
+                    currentlyPlayingButton = null;
+                    currentAudio = null;
+                    URL.revokeObjectURL(audioUrl);
 
                         // If we're in "play all" mode, move to the next item
                         if (playAllActive) {
@@ -334,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 
                                 // Small delay before playing next
                                 debug(`Moving to next item ${nextIndex+1}`);
-                                setTimeout(() => {
+                        setTimeout(() => {
                                     playNextItem(nextIndex);
                                 }, 1000);
                             } else {
@@ -354,24 +354,24 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         }
                         
-                        resolve();
-                    });
-                    
-                    audio.addEventListener('error', (e) => {
+                    resolve();
+                });
+
+                audio.addEventListener('error', (e) => {
                         debug(`Audio error: ${e.type}`, true);
-                        reject(e);
-                    });
-                    
+                    reject(e);
+                });
+
                     audio.addEventListener('canplaythrough', () => {
                         debug('Audio ready to play through');
                     });
                     
                     debug('Starting desktop audio playback');
-                    audio.volume = 1.0;
-                    audio.play().catch(error => {
+                audio.volume = 1.0;
+                audio.play().catch(error => {
                         debug(`Audio playback failed: ${error.message}`, true);
-                        reject(error);
-                    });
+                    reject(error);
+                });
                 }
             } catch (error) {
                 debug(`Error in audio creation: ${error.message}`, true);
@@ -704,27 +704,27 @@ document.addEventListener('DOMContentLoaded', () => {
                             
                             // Fallback to the API if both static and cache fail
                             const apiResponse = await fetch('/.netlify/functions/text-to-speech', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    text: textToSpeak,
-                                    voice: selectedVoice
-                                })
-                            });
-                            
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            text: textToSpeak,
+                            voice: selectedVoice
+                        })
+                    });
+
                             if (!apiResponse.ok) {
                                 throw new Error(`API error: ${apiResponse.status}`);
                             }
                             
                             debug('API response received');
                             const data = await apiResponse.json();
-                            audioData = data.audio;
-                            
-                            // Save to cache for future use
+                    audioData = data.audio;
+                    
+                    // Save to cache for future use
                             try {
-                                await saveToCache(textToSpeak, selectedVoice, audioData);
+                    await saveToCache(textToSpeak, selectedVoice, audioData);
                                 debug('Audio saved to cache');
                             } catch (cacheError) {
                                 debug(`Failed to cache: ${cacheError.message}`, true);
@@ -802,7 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.timeline-content').forEach(content => {
                 const details = content.querySelector('.details');
                 content.classList.remove('active');
-                if (details && details.classList.contains('active')) {
+            if (details && details.classList.contains('active')) {
                     toggleDetail(content, false);
                 }
             });

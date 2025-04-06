@@ -1,1 +1,915 @@
- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Road to AGI Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root {
+            --primary-color: #3949ab;
+            --secondary-color: #00acc1;
+            --dark-color: #303F9F;
+            --danger-color: #e53935;
+            --light-color: #f5f5f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f7f9;
+            color: #333;
+            padding: 2rem;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary, .btn-secondary, .btn-success, .btn-danger {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #757575;
+            color: white;
+        }
+        
+        .btn-success {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .status-message {
+            padding: 0.75rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .status-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .status-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .milestone-list-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .milestone-item {
+            padding: 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            transition: background-color 0.2s;
+        }
+        
+        .milestone-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .milestone-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .milestone-year {
+            font-weight: bold;
+            min-width: 100px;
+        }
+        
+        .milestone-title {
+            font-size: 1.1rem;
+        }
+        
+        .milestone-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .milestone-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--dark-color);
+            font-size: 1rem;
+        }
+        
+        .milestone-actions button:hover {
+            color: var(--primary-color);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 2rem auto;
+            max-width: 700px;
+            width: 90%;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: modalFadeIn 0.3s;
+        }
+        
+        .delete-modal {
+            max-width: 500px;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #aaa;
+        }
+        
+        .modal-close:hover {
+            color: var(--dark-color);
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        .icon-selector {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .icon-preview {
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .icon-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .icon-suggestions span {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .icon-suggestions span:hover {
+            background-color: #e0e0e0;
+        }
+        
+        /* Tags input */
+        .tags-input {
+            width: 100%;
+        }
+        
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e0e0e0;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .tag-close {
+            margin-left: 0.5rem;
+            cursor: pointer;
+        }
+        
+        /* Links container */
+        .link-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            align-items: start;
+        }
+        
+        .link-remove {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.5rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        /* Loading spinner */
+        .loading-spinner {
+            text-align: center;
+            padding: 2rem;
+            color: #757575;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1>Road to AGI Timeline Admin</h1>
+        <div class="admin-actions">
+            <button id="add-milestone-btn" class="btn-primary"><i class="fas fa-plus"></i> Add New Milestone</button>
+            <button id="save-all-btn" class="btn-success"><i class="fas fa-save"></i> Save All Changes</button>
+            <button id="logout-btn" class="btn-secondary"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </div>
+
+    <div id="status-message" class="status-message"></div>
+
+    <div class="milestone-list-container">
+        <h2>Timeline Milestones</h2>
+        <div id="milestone-list" class="milestone-list">
+            <!-- Milestones will be loaded here dynamically -->
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i> Loading milestones...
+            </div>
+        </div>
+    </div>
+
+    <!-- Milestone Editor Modal -->
+    <div id="milestone-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Edit Milestone</h2>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="milestone-form">
+                    <input type="hidden" id="milestone-id">
+                    
+                    <div class="form-group">
+                        <label for="milestone-year">Year</label>
+                        <input type="text" id="milestone-year" required placeholder="e.g., 1950 or ~Mid 1970s">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="milestone-title">Title</label>
+                        <input type="text" id="milestone-title" required placeholder="Milestone title">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="milestone-icon">Icon (Font Awesome class)</label>
+                        <div class="icon-selector">
+                            <input type="text" id="milestone-icon" placeholder="e.g., fas fa-robot">
+                            <div class="icon-preview">
+                                <i id="icon-preview-display" class="fas fa-question"></i>
+                            </div>
+                        </div>
+                        <div class="icon-suggestions">
+                            <span data-icon="fas fa-robot"><i class="fas fa-robot"></i></span>
+                            <span data-icon="fas fa-brain"><i class="fas fa-brain"></i></span>
+                            <span data-icon="fas fa-microchip"><i class="fas fa-microchip"></i></span>
+                            <span data-icon="fas fa-network-wired"><i class="fas fa-network-wired"></i></span>
+                            <span data-icon="fas fa-desktop"><i class="fas fa-desktop"></i></span>
+                            <span data-icon="fas fa-laptop-code"><i class="fas fa-laptop-code"></i></span>
+                            <span data-icon="fas fa-cogs"><i class="fas fa-cogs"></i></span>
+                            <span data-icon="fas fa-lightbulb"><i class="fas fa-lightbulb"></i></span>
+                            <span data-icon="fas fa-chess"><i class="fas fa-chess"></i></span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="milestone-players">Players/Concepts</label>
+                        <div class="tags-input">
+                            <input type="text" id="milestone-players-input" placeholder="Type and press Enter to add">
+                            <div id="milestone-players-tags" class="tags-container"></div>
+                        </div>
+                        <input type="hidden" id="milestone-players">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="milestone-details">Details</label>
+                        <textarea id="milestone-details" rows="5" required placeholder="Detailed description..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="milestone-quote">Quote (optional)</label>
+                        <textarea id="milestone-quote" rows="3" placeholder="Optional quote..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Learn More Links</label>
+                        <div id="links-container">
+                            <!-- Links will be added here dynamically -->
+                        </div>
+                        <button type="button" id="add-link-btn" class="btn-secondary">
+                            <i class="fas fa-plus"></i> Add Link
+                        </button>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Save Milestone</button>
+                        <button type="button" class="btn-secondary modal-cancel">Cancel</button>
+                        <button type="button" id="delete-milestone-btn" class="btn-danger">Delete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-confirm-modal" class="modal">
+        <div class="modal-content delete-modal">
+            <div class="modal-header">
+                <h2>Confirm Deletion</h2>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this milestone? This action cannot be undone.</p>
+                <div class="form-actions">
+                    <button id="confirm-delete-btn" class="btn-danger">Yes, Delete</button>
+                    <button class="btn-secondary modal-cancel">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("Admin panel loading...");
+            const isLoggedIn = sessionStorage.getItem('roadToAGI_adminLoggedIn') === 'true';
+            console.log("Is logged in:", isLoggedIn);
+            
+            if (!isLoggedIn) {
+                console.log("Not logged in, redirecting to login page");
+                window.location.href = '/admin/index.html';
+                return;
+            }
+
+            // Initialize the admin panel
+            initializeAdminPanel();
+        });
+
+        let timelineData = null;
+        let currentMilestoneId = null;
+        
+        function initializeAdminPanel() {
+            console.log("Initializing admin panel");
+            // Load the timeline data
+            loadTimelineData();
+            
+            // Setup event listeners
+            document.getElementById('add-milestone-btn').addEventListener('click', showAddMilestoneModal);
+            document.getElementById('save-all-btn').addEventListener('click', saveAllChanges);
+            document.getElementById('logout-btn').addEventListener('click', logout);
+            document.getElementById('milestone-form').addEventListener('submit', saveMilestone);
+            document.getElementById('add-link-btn').addEventListener('click', addLinkField);
+            document.getElementById('delete-milestone-btn').addEventListener('click', showDeleteConfirmation);
+            document.getElementById('confirm-delete-btn').addEventListener('click', deleteMilestone);
+            
+            // Close modal handlers
+            document.querySelectorAll('.modal-close, .modal-cancel').forEach(el => {
+                el.addEventListener('click', closeModals);
+            });
+            
+            // Icon preview handler
+            const iconInput = document.getElementById('milestone-icon');
+            iconInput.addEventListener('input', updateIconPreview);
+            
+            // Icon suggestions handler
+            document.querySelectorAll('.icon-suggestions span').forEach(span => {
+                span.addEventListener('click', () => {
+                    const icon = span.dataset.icon;
+                    iconInput.value = icon;
+                    updateIconPreview();
+                });
+            });
+            
+            // Players/Concepts tags input
+            setupTagsInput();
+            console.log("Admin panel initialization complete");
+        }
+        
+        async function loadTimelineData() {
+            try {
+                console.log("Loading timeline data...");
+                showStatusMessage('Loading timeline data...', 'info');
+                
+                const response = await fetch('/.netlify/functions/get-timeline');
+                console.log("Timeline data response status:", response.status);
+                
+                if (!response.ok) throw new Error('Failed to load timeline data');
+                
+                const data = await response.json();
+                console.log("Timeline data loaded:", data);
+                timelineData = data;
+                
+                renderMilestoneList();
+                showStatusMessage('Timeline data loaded successfully!', 'success');
+            } catch (error) {
+                console.error('Error loading timeline data:', error);
+                showStatusMessage('Failed to load timeline data. Please try again.', 'error');
+            }
+        }
+        
+        function renderMilestoneList() {
+            console.log("Rendering milestone list");
+            const listContainer = document.getElementById('milestone-list');
+            
+            if (!timelineData || !timelineData.timeline || timelineData.timeline.length === 0) {
+                console.log("No milestones found");
+                listContainer.innerHTML = '<p>No milestones found. Click "Add New Milestone" to create one.</p>';
+                return;
+            }
+            
+            // Sort milestones by numeric year if possible, otherwise alphabetically
+            const sortedMilestones = [...timelineData.timeline].sort((a, b) => {
+                const yearA = parseInt(a.year.replace(/\D/g, ''));
+                const yearB = parseInt(b.year.replace(/\D/g, ''));
+                
+                if (!isNaN(yearA) && !isNaN(yearB)) {
+                    return yearA - yearB;
+                }
+                
+                return a.year.localeCompare(b.year);
+            });
+            
+            console.log("Sorted milestones:", sortedMilestones.length);
+            
+            let html = '';
+            sortedMilestones.forEach(milestone => {
+                html += `
+                    <div class="milestone-item" data-id="${milestone.id}">
+                        <div class="milestone-info">
+                            <div class="milestone-year">${milestone.year}</div>
+                            <div class="milestone-title">${milestone.title}</div>
+                        </div>
+                        <div class="milestone-actions">
+                            <button class="edit-milestone" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="delete-milestone" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            listContainer.innerHTML = html;
+            
+            // Attach event listeners to the edit and delete buttons
+            document.querySelectorAll('.edit-milestone').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.closest('.milestone-item').dataset.id;
+                    editMilestone(id);
+                });
+            });
+            
+            document.querySelectorAll('.delete-milestone').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.closest('.milestone-item').dataset.id;
+                    confirmDeleteMilestone(id);
+                });
+            });
+            
+            console.log("Milestone list rendered");
+        }
+        
+        function showAddMilestoneModal() {
+            console.log("Showing add milestone modal");
+            // Reset the form
+            document.getElementById('milestone-form').reset();
+            document.getElementById('milestone-id').value = '';
+            document.getElementById('milestone-players-tags').innerHTML = '';
+            document.getElementById('links-container').innerHTML = '';
+            document.getElementById('icon-preview-display').className = 'fas fa-question';
+            
+            // Add an empty link field
+            addLinkField();
+            
+            // Update modal title
+            document.getElementById('modal-title').textContent = 'Add New Milestone';
+            
+            // Hide delete button for new milestones
+            document.getElementById('delete-milestone-btn').style.display = 'none';
+            
+            // Show the modal
+            document.getElementById('milestone-modal').style.display = 'block';
+        }
+        
+        function editMilestone(id) {
+            console.log("Editing milestone:", id);
+            const milestone = timelineData.timeline.find(m => m.id === id);
+            if (!milestone) {
+                console.error("Milestone not found:", id);
+                return;
+            }
+            
+            // Set the current milestone ID
+            currentMilestoneId = id;
+            document.getElementById('milestone-id').value = id;
+            
+            // Fill the form with milestone data
+            document.getElementById('milestone-year').value = milestone.year;
+            document.getElementById('milestone-title').value = milestone.title;
+            document.getElementById('milestone-icon').value = milestone.icon;
+            document.getElementById('milestone-details').value = milestone.details;
+            document.getElementById('milestone-quote').value = milestone.quote || '';
+            
+            // Update icon preview
+            document.getElementById('icon-preview-display').className = milestone.icon;
+            
+            // Add players/concepts tags
+            document.getElementById('milestone-players-tags').innerHTML = '';
+            if (milestone.players_concepts && milestone.players_concepts.length > 0) {
+                milestone.players_concepts.forEach(player => {
+                    addTag(player);
+                });
+            }
+            
+            // Add links
+            document.getElementById('links-container').innerHTML = '';
+            if (milestone.learn_more_links && milestone.learn_more_links.length > 0) {
+                milestone.learn_more_links.forEach(link => {
+                    addLinkField(link.text, link.url);
+                });
+            } else {
+                addLinkField();
+            }
+            
+            // Update modal title
+            document.getElementById('modal-title').textContent = 'Edit Milestone';
+            
+            // Show delete button for existing milestones
+            document.getElementById('delete-milestone-btn').style.display = 'block';
+            
+            // Show the modal
+            document.getElementById('milestone-modal').style.display = 'block';
+        }
+        
+        function saveMilestone(event) {
+            event.preventDefault();
+            console.log("Saving milestone");
+            
+            // Get form data
+            const id = document.getElementById('milestone-id').value || generateId();
+            const year = document.getElementById('milestone-year').value.trim();
+            const title = document.getElementById('milestone-title').value.trim();
+            const icon = document.getElementById('milestone-icon').value.trim();
+            const details = document.getElementById('milestone-details').value.trim();
+            const quote = document.getElementById('milestone-quote').value.trim();
+            
+            // Get players/concepts
+            const playersTags = Array.from(document.getElementById('milestone-players-tags').querySelectorAll('.tag'));
+            const players = playersTags.map(tag => tag.textContent.replace('×', '').trim());
+            
+            // Get links
+            const linkRows = document.querySelectorAll('.link-row');
+            const links = [];
+            
+            linkRows.forEach(row => {
+                const textInput = row.querySelector('input[name="link-text"]');
+                const urlInput = row.querySelector('input[name="link-url"]');
+                
+                if (textInput && urlInput && textInput.value.trim() && urlInput.value.trim()) {
+                    links.push({
+                        text: textInput.value.trim(),
+                        url: urlInput.value.trim()
+                    });
+                }
+            });
+            
+            // Create or update the milestone object
+            const milestone = {
+                id,
+                year,
+                title,
+                icon: icon || 'fas fa-lightbulb',
+                players_concepts: players,
+                details,
+                quote: quote || null,
+                learn_more_links: links
+            };
+            
+            console.log("Milestone data:", milestone);
+            
+            // Add or update the milestone in the timeline data
+            if (!timelineData) {
+                timelineData = {
+                    timeline: [],
+                    metadata: {
+                        title: 'The Road to AGI and Beyond',
+                        description: 'An interactive timeline based on insights from the Artificial Intelligence Show podcast series and AI history.',
+                        lastUpdated: new Date().toISOString().split('T')[0]
+                    }
+                };
+            }
+            
+            const existingIndex = timelineData.timeline.findIndex(m => m.id === id);
+            if (existingIndex !== -1) {
+                console.log("Updating existing milestone at index:", existingIndex);
+                timelineData.timeline[existingIndex] = milestone;
+            } else {
+                console.log("Adding new milestone");
+                timelineData.timeline.push(milestone);
+            }
+            
+            // Update the last updated date
+            timelineData.metadata.lastUpdated = new Date().toISOString().split('T')[0];
+            
+            // Save the timeline data
+            saveTimelineData();
+            
+            // Close the modal
+            closeModals();
+        }
+        
+        function generateId() {
+            const year = document.getElementById('milestone-year').value.trim();
+            const title = document.getElementById('milestone-title').value.trim();
+            
+            // Convert to slug
+            const yearSlug = year.toLowerCase()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-+|-+$/g, '');
+                
+            const titleSlug = title.toLowerCase()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-+|-+$/g, '');
+                
+            return `${yearSlug}-${titleSlug}`;
+        }
+        
+        function showDeleteConfirmation() {
+            console.log("Showing delete confirmation modal");
+            document.getElementById('milestone-modal').style.display = 'none';
+            document.getElementById('delete-confirm-modal').style.display = 'block';
+        }
+        
+        function confirmDeleteMilestone(id) {
+            console.log("Confirming deletion of milestone:", id);
+            currentMilestoneId = id;
+            document.getElementById('delete-confirm-modal').style.display = 'block';
+        }
+        
+        function deleteMilestone() {
+            if (!currentMilestoneId) {
+                console.error("No milestone ID set for deletion");
+                return;
+            }
+            
+            console.log("Deleting milestone:", currentMilestoneId);
+            
+            // Remove the milestone from the timeline data
+            timelineData.timeline = timelineData.timeline.filter(m => m.id !== currentMilestoneId);
+            
+            // Update the last updated date
+            timelineData.metadata.lastUpdated = new Date().toISOString().split('T')[0];
+            
+            // Save the timeline data
+            saveTimelineData();
+            
+            // Close the modals
+            closeModals();
+        }
+        
+        async function saveTimelineData() {
+            try {
+                console.log("Saving timeline data...");
+                showStatusMessage('Saving timeline data...', 'info');
+                
+                const password = sessionStorage.getItem('roadToAGI_adminPassword');
+                console.log("Using password from session storage");
+                
+                const response = await fetch('/.netlify/functions/save-timeline', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        timelineData,
+                        password
+                    })
+                });
+                
+                console.log("Save response status:", response.status);
+                
+                if (!response.ok) throw new Error('Failed to save timeline data');
+                
+                const data = await response.json();
+                console.log("Save response data:", data);
+                
+                // Refresh the milestone list
+                renderMilestoneList();
+                
+                showStatusMessage('Timeline data saved successfully!', 'success');
+            } catch (error) {
+                console.error('Error saving timeline data:', error);
+                showStatusMessage('Failed to save timeline data. Please try again.', 'error');
+            }
+        }
+        
+        function saveAllChanges() {
+            console.log("Saving all changes");
+            saveTimelineData();
+        }
+        
+        function logout() {
+            console.log("Logging out");
+            sessionStorage.removeItem('roadToAGI_adminLoggedIn');
+            sessionStorage.removeItem('roadToAGI_adminPassword');
+            window.location.href = '/admin/index.html';
+        }
+        
+        function closeModals() {
+            console.log("Closing modals");
+            document.getElementById('milestone-modal').style.display = 'none';
+            document.getElementById('delete-confirm-modal').style.display = 'none';
+        }
+        
+        function updateIconPreview() {
+            const iconClass = document.getElementById('milestone-icon').value.trim();
+            const previewElement = document.getElementById('icon-preview-display');
+            
+            previewElement.className = iconClass || 'fas fa-question';
+        }
+        
+        function addLinkField(text = '', url = '') {
+            console.log("Adding link field");
+            const linksContainer = document.getElementById('links-container');
+            const linkRow = document.createElement('div');
+            linkRow.className = 'link-row';
+            
+            linkRow.innerHTML = `
+                <div style="flex: 1;">
+                    <input type="text" name="link-text" placeholder="Link text" value="${text}" style="margin-bottom: 0.5rem;">
+                    <input type="text" name="link-url" placeholder="URL (https://...)" value="${url}">
+                </div>
+                <button type="button" class="link-remove"><i class="fas fa-times"></i></button>
+            `;
+            
+            // Add event listener to remove button
+            linkRow.querySelector('.link-remove').addEventListener('click', function() {
+                linkRow.remove();
+            });
+            
+            linksContainer.appendChild(linkRow);
+        }
+        
+        function setupTagsInput() {
+            console.log("Setting up tags input");
+            const tagsInput = document.getElementById('milestone-players-input');
+            const tagsContainer = document.getElementById('milestone-players-tags');
+            
+            tagsInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    
+                    const value = this.value.trim();
+                    if (value) {
+                        addTag(value);
+                        this.value = '';
+                    }
+                }
+            });
+        }
+        
+        function addTag(text) {
+            console.log("Adding tag:", text);
+            const tagsContainer = document.getElementById('milestone-players-tags');
+            const tag = document.createElement('span');
+            tag.className = 'tag';
+            tag.textContent = text;
+            
+            const closeBtn = document.createElement('span');
+            closeBtn.className = 'tag-close';
+            closeBtn.textContent = '×';
+            closeBtn.addEventListener('click', function() {
+                tag.remove();
+            });
+            
+            tag.appendChild(closeBtn);
+            tagsContainer.appendChild(tag);
+        }
+        
+        function showStatusMessage(message, type) {
+            console.log(`Status message (${type}):`, message);
+            const statusElement = document.getElementById('status-message');
+            statusElement.textContent = message;
+            statusElement.className = `status-message ${type}`;
+            
+            // Hide the message after 5 seconds
+            setTimeout(() => {
+                statusElement.className = 'status-message';
+            }, 5000);
+        }
+    </script>
+</body>
+</html> 

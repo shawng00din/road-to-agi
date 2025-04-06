@@ -1,0 +1,157 @@
+{
+  "timeline": [
+    {
+      "id": "1950-turing-test-foundations",
+      "year": "1950",
+      "title": "Turing Test & Foundations",
+      "icon": "fas fa-calculator",
+      "players_concepts": ["Alan Turing"],
+      "details": "Alan Turing publishes \"Computing Machinery and Intelligence,\" proposing the Turing Test as a benchmark for machine intelligence and laying philosophical groundwork for AI.",
+      "quote": null,
+      "learn_more_links": [
+        {
+          "text": "Turing Test",
+          "url": "https://en.wikipedia.org/wiki/Turing_test"
+        }
+      ]
+    },
+    {
+      "id": "1956-dartmouth-workshop-ai-is-born",
+      "year": "1956",
+      "title": "Dartmouth Workshop - AI is Born",
+      "icon": "fas fa-users",
+      "players_concepts": ["John McCarthy", "Marvin Minsky", "Claude Shannon", "Nathaniel Rochester"],
+      "details": "A summer workshop at Dartmouth College coins the term \"Artificial Intelligence\" and brings together founding researchers, establishing AI as a formal field of study.",
+      "quote": null,
+      "learn_more_links": []
+    },
+    {
+      "id": "mid-1970s-first-ai-winter",
+      "year": "~ Mid 1970s",
+      "title": "First AI Winter",
+      "icon": "fas fa-snowflake",
+      "players_concepts": ["Overpromising", "Computational Limits", "Lighthill Report (UK)", "DARPA funding cuts (US)"],
+      "details": "A period of reduced funding and interest in AI research due to unmet expectations, limitations in computing power, and critical government reports questioning progress.",
+      "quote": null,
+      "learn_more_links": [
+        {
+          "text": "Lighthill Report",
+          "url": "https://en.wikipedia.org/wiki/Lighthill_report"
+        }
+      ]
+    },
+    {
+      "id": "early-1980s-expert-systems-boom",
+      "year": "~ Early 1980s",
+      "title": "Expert Systems Boom",
+      "icon": "fas fa-lightbulb",
+      "players_concepts": ["Expert Systems", "Knowledge Engineering", "Lisp Machines"],
+      "details": "AI finds commercial success with Expert Systems – programs designed to mimic the decision-making ability of a human expert in narrow domains. Specialized hardware emerges.",
+      "quote": null,
+      "learn_more_links": [
+        {
+          "text": "Expert Systems",
+          "url": "https://en.wikipedia.org/wiki/Expert_system"
+        }
+      ]
+    },
+    {
+      "id": "late-80s-early-90s-second-ai-winter",
+      "year": "~ Late 80s / Early 90s",
+      "title": "Second AI Winter",
+      "icon": "fas fa-snowflake",
+      "players_concepts": ["Collapse of Lisp Machine market", "High cost/brittleness of Expert Systems"],
+      "details": "The hype around Expert Systems fades as they prove difficult and expensive to maintain and scale. The specialized hardware market collapses, leading to another downturn in funding and interest.",
+      "quote": null,
+      "learn_more_links": []
+    },
+    {
+      "id": "1997-ibm-deep-blue-vs-kasparov",
+      "year": "1997",
+      "title": "IBM Deep Blue vs. Kasparov",
+      "icon": "fas fa-chess-king",
+      "players_concepts": ["IBM Deep Blue", "Garry Kasparov"],
+      "details": "IBM's chess-playing computer, Deep Blue, defeats world chess champion Garry Kasparov in a landmark match, showcasing the power of specialized hardware and brute-force search for specific tasks.",
+      "quote": null,
+      "learn_more_links": [
+        {
+          "text": "Deep Blue versus Garry Kasparov",
+          "url": "https://en.wikipedia.org/wiki/Deep_Blue_versus_Garry_Kasparov"
+        }
+      ]
+    },
+    {
+      "id": "2011-ibm-watson-wins-jeopardy",
+      "year": "2011",
+      "title": "IBM Watson Wins Jeopardy!",
+      "icon": "fas fa-trophy",
+      "players_concepts": ["IBM Watson", "Natural Language Processing (NLP)", "Question Answering"],
+      "details": "IBM's Watson computer defeats human champions on the quiz show Jeopardy!, demonstrating significant advances in NLP, information retrieval, and understanding nuanced language.",
+      "quote": "Paul Roetzer called this his \"inflection point\" for getting into AI.",
+      "learn_more_links": [
+        {
+          "text": "IBM Watson",
+          "url": "https://www.ibm.com/watson"
+        },
+        {
+          "text": "Paul Roetzer",
+          "url": "https://www.linkedin.com/in/paulroetzer/"
+        }
+      ]
+    },
+    {
+      "id": "2012-alexnet-deep-learning-boom",
+      "year": "2012",
+      "title": "AlexNet & Deep Learning Boom",
+      "icon": "fas fa-network-wired",
+      "players_concepts": ["AlexNet", "Geoffrey Hinton", "Yann LeCun", "Yoshua Bengio", "ImageNet Challenge", "GPUs", "Deep Learning"],
+      "details": "AlexNet, a deep convolutional neural network, dramatically wins the ImageNet image recognition competition. This success, enabled by large datasets and GPU acceleration, triggers the modern deep learning revolution.",
+      "quote": null,
+      "learn_more_links": [
+        {
+          "text": "AlexNet",
+          "url": "https://en.wikipedia.org/wiki/AlexNet"
+        },
+        {
+          "text": "Deep Learning",
+          "url": "https://en.wikipedia.org/wiki/Deep_learning"
+        }
+      ]
+    },
+    {
+      "id": "2016-alphago-move-37",
+      "year": "2016",
+      "title": "AlphaGo & \"Move 37\"",
+      "icon": "fas fa-gamepad",
+      "players_concepts": ["Google DeepMind AlphaGo", "Lee Sedol", "Reinforcement Learning", "Monte Carlo Tree Search"],
+      "details": "DeepMind's AlphaGo defeats world Go champion Lee Sedol 4-1. \"Move 37\" in game 2 becomes famous as a creative, unexpected move by the AI, highlighting the potential beyond human intuition in complex strategy.",
+      "quote": null,
+      "learn_more_links": [
+        {
+          "text": "AlphaGo",
+          "url": "https://deepmind.google/discover/blog/alphago-the-story-so-far/"
+        }
+      ]
+    },
+    {
+      "id": "2023-chatgpt-generative-ai-explosion",
+      "year": "2023",
+      "title": "ChatGPT & Generative AI Explosion",
+      "icon": "fas fa-lightbulb",
+      "players_concepts": ["OpenAI", "ChatGPT", "GPT-4", "Generative AI", "Large Language Models"],
+      "details": "Following ChatGPT's viral launch in late 2022, generative AI sees explosive adoption across industries. Businesses scramble to implement AI strategies while grappling with concerns about job displacement, misinformation, and ethical usage.",
+      "quote": "ChatGPT became the fastest-growing consumer application in history, reaching 100 million users in just two months.",
+      "learn_more_links": [
+        {
+          "text": "ChatGPT",
+          "url": "https://chat.openai.com/"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "title": "The Road to AGI and Beyond",
+    "description": "An interactive timeline based on insights from the Artificial Intelligence Show podcast series and AI history.",
+    "lastUpdated": "2024-04-04"
+  }
+} 
