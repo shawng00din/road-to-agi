@@ -2,6 +2,6 @@
   "name": "road-to-agi-functions",
   "version": "1.0.0",
   "dependencies": {
-    "@netlify/blobs": "^6.4.2"
+    "@netlify/blobs": "^6.5.0"
   }
-} 
+}
