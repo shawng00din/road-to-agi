@@ -34,4 +34,9 @@
   from = "/api/milestones"
   to = "/.netlify/functions/create-milestone"
   status = 200
-  method = "POST" 
+  method = "POST"
+
+[[redirects]]
+  from = "/api/test-blob-storage"
+  to = "/.netlify/functions/test-blob-storage"
+  status = 200 
