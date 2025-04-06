@@ -655,7 +655,7 @@
             console.log("Saving milestone");
             
             // Get form data
-            const id = document.getElementById('milestone-id').value || generateId();
+            const id = document.getElementById('milestone-id').value || '';
             const year = document.getElementById('milestone-year').value.trim();
             const title = document.getElementById('milestone-title').value.trim();
             const icon = document.getElementById('milestone-icon').value.trim();
@@ -682,7 +682,7 @@
                 }
             });
             
-            // Create or update the milestone object
+            // Create the milestone object
             const milestone = {
                 id,
                 year,
@@ -696,35 +696,119 @@
             
             console.log("Milestone data:", milestone);
             
-            // Add or update the milestone in the timeline data
-            if (!timelineData) {
-                timelineData = {
-                    timeline: [],
-                    metadata: {
-                        title: 'The Road to AGI and Beyond',
-                        description: 'An interactive timeline based on insights from the Artificial Intelligence Show podcast series and AI history.',
-                        lastUpdated: new Date().toISOString().split('T')[0]
-                    }
-                };
-            }
-            
-            const existingIndex = timelineData.timeline.findIndex(m => m.id === id);
-            if (existingIndex !== -1) {
-                console.log("Updating existing milestone at index:", existingIndex);
-                timelineData.timeline[existingIndex] = milestone;
+            // Check if this is a new milestone or an edit
+            if (!id) {
+                // New milestone - use create-milestone function
+                createNewMilestone(milestone);
             } else {
-                console.log("Adding new milestone");
-                timelineData.timeline.push(milestone);
+                // Existing milestone - update it in the timeline data
+                updateExistingMilestone(milestone);
             }
-            
-            // Update the last updated date
-            timelineData.metadata.lastUpdated = new Date().toISOString().split('T')[0];
-            
-            // Save the timeline data
-            saveTimelineData();
             
             // Close the modal
             closeModals();
+        }
+        
+        async function createNewMilestone(milestone) {
+            try {
+                console.log("===== CREATING NEW MILESTONE =====");
+                console.log("Milestone data:", JSON.stringify(milestone, null, 2));
+                showStatusMessage('Creating new milestone...', 'info');
+                
+                const password = sessionStorage.getItem('roadToAGI_adminPassword');
+                console.log("Using password from session storage:", password ? "Password exists (not shown)" : "No password");
+                
+                const requestBody = {
+                    milestone,
+                    password
+                };
+                console.log("Request payload size:", JSON.stringify(requestBody).length, "bytes");
+                console.log("Sending request to:", '/api/milestones');
+                
+                const startTime = new Date().getTime();
+                console.log("Request started at:", new Date().toISOString());
+                
+                const response = await fetch('/api/milestones', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                const endTime = new Date().getTime();
+                console.log("Request completed in:", (endTime - startTime), "ms");
+                console.log("Response status:", response.status, response.statusText);
+                console.log("Response headers:", Object.fromEntries([...response.headers.entries()]));
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(errorText);
+                        console.error("Error response data:", errorData);
+                    } catch (e) {
+                        console.error("Error response text (not JSON):", errorText);
+                    }
+                    throw new Error(`Failed to create milestone: ${response.status} ${response.statusText} - ${errorData?.message || errorText}`);
+                }
+                
+                const responseText = await response.text();
+                console.log("Raw response:", responseText);
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                    console.log("Response data:", data);
+                } catch (e) {
+                    console.error("Error parsing response JSON:", e);
+                    console.log("Non-JSON response received");
+                }
+                
+                // Reload the timeline data
+                console.log("Reloading timeline data after successful creation");
+                loadTimelineData();
+                
+                showStatusMessage('Milestone created successfully!', 'success');
+            } catch (error) {
+                console.error('Error creating milestone:', error);
+                console.error('Error stack:', error.stack);
+                showStatusMessage('Failed to create milestone. Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function updateExistingMilestone(milestone) {
+            try {
+                // For now, use the existing save method until we implement update-milestone
+                if (!timelineData) {
+                    timelineData = {
+                        timeline: [],
+                        metadata: {
+                            title: 'The Road to AGI and Beyond',
+                            description: 'An interactive timeline based on insights from the Artificial Intelligence Show podcast series and AI history.',
+                            lastUpdated: new Date().toISOString().split('T')[0]
+                        }
+                    };
+                }
+                
+                const existingIndex = timelineData.timeline.findIndex(m => m.id === milestone.id);
+                if (existingIndex !== -1) {
+                    console.log("Updating existing milestone at index:", existingIndex);
+                    timelineData.timeline[existingIndex] = milestone;
+                } else {
+                    console.log("Adding milestone with existing ID (should not happen)");
+                    timelineData.timeline.push(milestone);
+                }
+                
+                // Update the last updated date
+                timelineData.metadata.lastUpdated = new Date().toISOString().split('T')[0];
+                
+                // Save the timeline data
+                saveTimelineData();
+            } catch (error) {
+                console.error('Error updating milestone:', error);
+                showStatusMessage('Failed to update milestone. Error: ' + error.message, 'error');
+            }
         }
         
         function generateId() {
