@@ -8,6 +8,9 @@ This project was ideated by Paul Roetzer on the [Artificial Intelligence Show po
 
 You can also watch the [YouTube version of the podcast here](https://www.youtube.com/watch?v=SUAuB5g_oCw&t=653s).
 
+## Deploy Status
+[![Netlify Status](https://api.netlify.com/api/v1/badges/dda06506-bfc3-48fe-bc0a-eb39914fe31e/deploy-status)](https://app.netlify.com/sites/roadtoagi/deploys)
+
 ## Features
 
 - **Interactive Timeline**: Scroll through a chronological presentation of AI milestones from 1950 to projected future developments.
