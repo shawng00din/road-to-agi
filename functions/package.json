@@ -2,6 +2,7 @@
   "name": "road-to-agi-functions",
   "version": "1.0.0",
   "dependencies": {
-    "@netlify/blobs": "^8.1.2"
+    "@netlify/blobs": "^8.1.2",
+    "mysql2": "^3.14.0"
   }
 }

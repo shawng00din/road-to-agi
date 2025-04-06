@@ -1,102 +1,18 @@
-const fs = require('fs');
-const path = require('path');
-const { exec } = require('child_process');
-const util = require('util');
-const execPromise = util.promisify(exec);
+const db = require('./db');
 
 // Constants
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
-const DATA_FILE_PATH = path.join(__dirname, '..', 'data', 'timeline.json');
-
-// Helper function to read the timeline data
-async function getTimelineData() {
-  try {
-    // Check if file exists
-    if (!fs.existsSync(DATA_FILE_PATH)) {
-      console.log("Timeline data file not found, creating default");
-      
-      // Create default data
-      const defaultData = {
-        timeline: [],
-        metadata: {
-          title: "The Road to AGI and Beyond",
-          description: "An interactive timeline based on insights from the Artificial Intelligence Show podcast series and AI history.",
-          lastUpdated: new Date().toISOString().split('T')[0]
-        }
-      };
-      
-      // Make sure directory exists
-      const dirPath = path.dirname(DATA_FILE_PATH);
-      if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
-      }
-      
-      // Write default data
-      fs.writeFileSync(DATA_FILE_PATH, JSON.stringify(defaultData, null, 2), 'utf8');
-      return defaultData;
-    }
-    
-    // Read and parse the timeline data
-    const data = fs.readFileSync(DATA_FILE_PATH, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error("Error reading timeline data:", error);
-    throw error;
-  }
-}
-
-// Helper function to save the timeline data
-async function saveTimelineData(data) {
-  try {
-    // Update lastUpdated timestamp
-    data.metadata.lastUpdated = new Date().toISOString().split('T')[0];
-    
-    // Format JSON with indentation for better readability
-    const jsonData = JSON.stringify(data, null, 2);
-    
-    // Write to file
-    fs.writeFileSync(DATA_FILE_PATH, jsonData, 'utf8');
-    
-    // Commit changes if in production
-    if (process.env.NODE_ENV === 'production') {
-      try {
-        await commitChanges();
-      } catch (commitError) {
-        console.error("Warning: Failed to commit changes:", commitError);
-        // Continue anyway since the data is saved
-      }
-    }
-    
-    return true;
-  } catch (error) {
-    console.error("Error saving timeline data:", error);
-    throw error;
-  }
-}
-
-// Helper function to commit changes to git
-async function commitChanges() {
-  try {
-    // Get current timestamp for commit message
-    const timestamp = new Date().toISOString();
-    
-    // Run git commands
-    await execPromise('git add data/timeline.json');
-    await execPromise(`git commit -m "Update timeline data - ${timestamp}"`);
-    await execPromise('git push origin staging');
-    
-    console.log("Changes committed and pushed to Git");
-    return true;
-  } catch (error) {
-    console.error("Error committing changes:", error);
-    throw error;
-  }
-}
 
 // Function to get the timeline data
 async function getTimeline(event, context) {
   try {
-    const timelineData = await getTimelineData();
+    console.log("Getting timeline data from MySQL");
+    
+    // Initialize database on first request
+    await db.initializeDatabase();
+    
+    // Get timeline data
+    const timelineData = await db.getTimelineData();
     
     return {
       statusCode: 200,
@@ -106,6 +22,8 @@ async function getTimeline(event, context) {
       body: JSON.stringify(timelineData)
     };
   } catch (error) {
+    console.error('Error getting timeline data:', error);
+    
     return {
       statusCode: 500,
       headers: {
@@ -130,12 +48,15 @@ async function saveTimeline(event, context) {
   }
 
   try {
+    console.log("Saving timeline data to MySQL");
+    
     // Parse the request body
     const requestData = JSON.parse(event.body);
     const { timelineData, password } = requestData;
 
     // Validate password
     if (!password || password !== ADMIN_PASSWORD) {
+      console.log("Unauthorized - invalid password");
       return {
         statusCode: 401,
         body: JSON.stringify({ message: 'Unauthorized' })
@@ -144,14 +65,18 @@ async function saveTimeline(event, context) {
 
     // Validate timeline data
     if (!timelineData || !timelineData.timeline || !Array.isArray(timelineData.timeline)) {
+      console.log("Invalid timeline data:", timelineData);
       return {
         statusCode: 400,
         body: JSON.stringify({ message: 'Invalid timeline data' })
       };
     }
 
+    // Initialize database if needed
+    await db.initializeDatabase();
+    
     // Save the timeline data
-    await saveTimelineData(timelineData);
+    await db.saveTimelineData(timelineData);
 
     return {
       statusCode: 200,
@@ -178,7 +103,7 @@ async function createMilestone(event, context) {
   }
 
   try {
-    console.log("Create milestone function called");
+    console.log("Create milestone function called (MySQL)");
     
     // Parse the request body
     const requestData = JSON.parse(event.body);
@@ -228,29 +153,28 @@ async function createMilestone(event, context) {
     milestone.players_concepts = milestone.players_concepts || [];
     milestone.learn_more_links = milestone.learn_more_links || [];
     
-    // Get existing timeline data
-    const timelineData = await getTimelineData();
+    // Initialize database if needed
+    await db.initializeDatabase();
+    
+    // Get existing timeline data to check for duplicates
+    const timelineData = await db.getTimelineData();
     
     // Check if milestone with same ID already exists
-    const existingIndex = timelineData.timeline.findIndex(m => m.id === milestone.id);
+    const existingMilestone = timelineData.timeline.find(m => m.id === milestone.id);
     
-    if (existingIndex !== -1) {
+    if (existingMilestone) {
       console.log("A milestone with ID", milestone.id, "already exists");
       return {
         statusCode: 409,
         body: JSON.stringify({ 
           message: 'A milestone with this ID already exists. Use update-milestone to modify it.',
-          existingMilestone: timelineData.timeline[existingIndex]
+          existingMilestone
         })
       };
     }
 
-    // Add the new milestone
-    console.log("Adding new milestone to timeline");
-    timelineData.timeline.push(milestone);
-    
-    // Save the updated timeline data
-    await saveTimelineData(timelineData);
+    // Create the new milestone
+    await db.createMilestone(milestone);
 
     return {
       statusCode: 201,
@@ -272,15 +196,112 @@ async function createMilestone(event, context) {
   }
 }
 
+// Import data from existing JSON file
+async function importData(event, context) {
+  // Require POST method
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ message: 'Method Not Allowed' })
+    };
+  }
+
+  try {
+    console.log("Import timeline data function called");
+    
+    // Parse the request body
+    const requestData = JSON.parse(event.body);
+    const { password, filePath } = requestData;
+    
+    // Validate password
+    if (!password || password !== ADMIN_PASSWORD) {
+      console.log("Unauthorized - invalid password");
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ message: 'Unauthorized' })
+      };
+    }
+
+    // Default to data/timeline.json if no path provided
+    const dataPath = filePath || 'data/timeline.json';
+    
+    // Initialize database
+    await db.initializeDatabase();
+    
+    // Import data from JSON file
+    await db.importFromJSON(dataPath);
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ 
+        message: 'Timeline data imported successfully',
+        source: dataPath
+      })
+    };
+  } catch (error) {
+    console.error('Error importing timeline data:', error);
+    
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ 
+        message: 'Internal Server Error', 
+        error: error.message
+      })
+    };
+  }
+}
+
+// Function to test the database connection
+async function testDatabase(event, context) {
+  try {
+    console.log("Testing database connection");
+    
+    // Test the connection
+    const connected = await db.testConnection();
+    
+    if (connected) {
+      // Initialize schema
+      await db.initializeDatabase();
+      
+      // Get row counts
+      const [timelineResult] = await db.pool.query('SELECT COUNT(*) as count FROM timeline');
+      const [metadataResult] = await db.pool.query('SELECT COUNT(*) as count FROM timeline_metadata');
+      
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ 
+          message: 'Database connection successful',
+          timelineCount: timelineResult[0].count,
+          metadataCount: metadataResult[0].count,
+          database: 'dbwkp0mff1z0kq',
+          host: 'shawngoodin.com'
+        })
+      };
+    } else {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ message: 'Database connection failed' })
+      };
+    }
+  } catch (error) {
+    console.error('Error testing database connection:', error);
+    
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ 
+        message: 'Database connection error', 
+        error: error.message
+      })
+    };
+  }
+}
+
 // Export the handler functions
 exports.handler = async function(event, context) {
-  console.log("file-timeline.js handler called with path:", event.path);
+  console.log("mysql-timeline.js handler called with path:", event.path);
   console.log("Event details:", {
     httpMethod: event.httpMethod,
-    path: event.path,
-    pathParameters: event.pathParameters,
-    queryStringParameters: event.queryStringParameters,
-    headers: event.headers
+    path: event.path
   });
   
   // Check if we're using path parameters (Netlify routing) or raw paths
@@ -295,6 +316,10 @@ exports.handler = async function(event, context) {
       return await saveTimeline(event, context);
     } else if (route === 'create-milestone') {
       return await createMilestone(event, context);
+    } else if (route === 'import-data') {
+      return await importData(event, context);
+    } else if (route === 'test-database') {
+      return await testDatabase(event, context);
     }
   } else {
     // Fall back to checking the raw path
@@ -307,6 +332,10 @@ exports.handler = async function(event, context) {
       return await saveTimeline(event, context);
     } else if (path.endsWith('/create-milestone')) {
       return await createMilestone(event, context);
+    } else if (path.endsWith('/import-data')) {
+      return await importData(event, context);
+    } else if (path.endsWith('/test-database')) {
+      return await testDatabase(event, context);
     }
   }
   
@@ -316,8 +345,7 @@ exports.handler = async function(event, context) {
     statusCode: 404,
     body: JSON.stringify({ 
       message: 'Not Found',
-      path: event.path,
-      pathParameters: event.pathParameters 
+      path: event.path
     })
   };
 }; 
