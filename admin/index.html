@@ -1,0 +1,182 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Road to AGI - Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --danger-color: #ea4335;
+            --dark-color: #333;
+            --light-color: #f8f9fa;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background-color: var(--light-color);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 5rem auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        button {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #3367d6;
+        }
+        
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .admin-panel {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="login-section" class="login-container">
+            <h1>Road to AGI Admin</h1>
+            <div class="form-group">
+                <label for="password">Admin Password</label>
+                <input type="password" id="password" placeholder="Enter password">
+                <div id="error-message" class="error-message">Incorrect password. Please try again.</div>
+            </div>
+            <button id="login-button">Login</button>
+        </div>
+        
+        <div id="admin-panel" class="admin-panel">
+            <!-- Admin panel will be loaded here after login -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginButton = document.getElementById('login-button');
+            const passwordInput = document.getElementById('password');
+            const errorMessage = document.getElementById('error-message');
+            const loginSection = document.getElementById('login-section');
+            const adminPanel = document.getElementById('admin-panel');
+            
+            // Check if user is already logged in
+            const isLoggedIn = sessionStorage.getItem('roadToAGI_adminLoggedIn') === 'true';
+            if (isLoggedIn) {
+                showAdminPanel();
+            }
+            
+            loginButton.addEventListener('click', async function() {
+                const password = passwordInput.value.trim();
+                
+                try {
+                    const response = await fetch('/.netlify/functions/admin-auth', {
+                        method: 'POST',
+                        body: JSON.stringify({ password }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        // Save login state to session storage
+                        sessionStorage.setItem('roadToAGI_adminLoggedIn', 'true');
+                        showAdminPanel();
+                    } else {
+                        errorMessage.style.display = 'block';
+                        passwordInput.value = '';
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    errorMessage.textContent = 'An error occurred. Please try again.';
+                    errorMessage.style.display = 'block';
+                }
+            });
+            
+            function showAdminPanel() {
+                loginSection.style.display = 'none';
+                adminPanel.style.display = 'block';
+                
+                // Load the admin panel content
+                loadAdminPanel();
+            }
+            
+            async function loadAdminPanel() {
+                try {
+                    // Fetch the admin-panel.html fragment
+                    const response = await fetch('/admin/admin-panel.html');
+                    if (!response.ok) throw new Error('Failed to load admin panel');
+                    
+                    const html = await response.text();
+                    adminPanel.innerHTML = html;
+                    
+                    // Initialize the admin panel JS
+                    if (window.initializeAdminPanel) {
+                        window.initializeAdminPanel();
+                    }
+                } catch (error) {
+                    console.error('Error loading admin panel:', error);
+                    adminPanel.innerHTML = '<p>Error loading admin panel. Please refresh the page.</p>';
+                }
+            }
+        });
+    </script>
+</body>
+</html> 
