@@ -723,16 +723,32 @@
                     password
                 };
                 console.log("Request payload size:", JSON.stringify(requestBody).length, "bytes");
-                console.log("Sending request to:", '/api/milestones');
+                
+                // Try direct function endpoint instead of API redirect
+                const functionEndpoint = '/.netlify/functions/create-milestone';
+                console.log("Sending request to:", functionEndpoint);
                 
                 const startTime = new Date().getTime();
                 console.log("Request started at:", new Date().toISOString());
                 
-                const response = await fetch('/api/milestones', {
+                // Get auth cookie if present
+                const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+                    const [key, value] = cookie.trim().split('=');
+                    acc[key] = value;
+                    return acc;
+                }, {});
+                
+                console.log("Auth cookies available:", Object.keys(cookies).filter(k => k.includes('nf_jwt')).length > 0);
+                
+                const response = await fetch(functionEndpoint, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        // Include Netlify auth token if available
+                        ...(cookies.nf_jwt && { 'Authorization': `Bearer ${cookies.nf_jwt}` })
                     },
+                    // Include credentials for auth cookies
+                    credentials: 'include',
                     body: JSON.stringify(requestBody)
                 });
                 
