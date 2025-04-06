@@ -39,4 +39,21 @@
 [[redirects]]
   from = "/api/test-blob-storage"
   to = "/.netlify/functions/test-blob-storage"
-  status = 200 
+  status = 200
+
+[[redirects]]
+  from = "/api/file/get-timeline"
+  to = "/.netlify/functions/file-timeline/get-timeline"
+  status = 200
+
+[[redirects]]
+  from = "/api/file/save-timeline"
+  to = "/.netlify/functions/file-timeline/save-timeline"
+  status = 200
+  method = "POST"
+
+[[redirects]]
+  from = "/api/file/create-milestone"
+  to = "/.netlify/functions/file-timeline/create-milestone"
+  status = 200
+  method = "POST" 

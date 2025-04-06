@@ -326,6 +326,7 @@
             <button id="add-milestone-btn" class="btn-primary"><i class="fas fa-plus"></i> Add New Milestone</button>
             <button id="save-all-btn" class="btn-success"><i class="fas fa-save"></i> Save All Changes</button>
             <button id="test-storage-btn" class="btn-secondary"><i class="fas fa-vial"></i> Test Blob Storage</button>
+            <button id="test-file-btn" class="btn-secondary"><i class="fas fa-file"></i> Test File Storage</button>
             <button id="logout-btn" class="btn-secondary"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
     </div>
@@ -469,6 +470,7 @@
             document.getElementById('add-milestone-btn').addEventListener('click', showAddMilestoneModal);
             document.getElementById('save-all-btn').addEventListener('click', saveAllChanges);
             document.getElementById('test-storage-btn').addEventListener('click', testBlobStorage);
+            document.getElementById('test-file-btn').addEventListener('click', testFileStorage);
             document.getElementById('logout-btn').addEventListener('click', logout);
             document.getElementById('milestone-form').addEventListener('submit', saveMilestone);
             document.getElementById('add-link-btn').addEventListener('click', addLinkField);
@@ -499,25 +501,8 @@
         }
         
         async function loadTimelineData() {
-            try {
-                console.log("Loading timeline data...");
-                showStatusMessage('Loading timeline data...', 'info');
-                
-                const response = await fetch('/.netlify/functions/get-timeline');
-                console.log("Timeline data response status:", response.status);
-                
-                if (!response.ok) throw new Error('Failed to load timeline data');
-                
-                const data = await response.json();
-                console.log("Timeline data loaded:", data);
-                timelineData = data;
-                
-                renderMilestoneList();
-                showStatusMessage('Timeline data loaded successfully!', 'success');
-            } catch (error) {
-                console.error('Error loading timeline data:', error);
-                showStatusMessage('Failed to load timeline data. Please try again.', 'error');
-            }
+            // Use the file-based function
+            await loadFileTimelineData();
         }
         
         function renderMilestoneList() {
@@ -726,30 +711,18 @@
                 };
                 console.log("Request payload size:", JSON.stringify(requestBody).length, "bytes");
                 
-                // Try direct function endpoint instead of API redirect
-                const functionEndpoint = '/.netlify/functions/create-milestone';
-                console.log("Sending request to:", functionEndpoint);
+                // Use file-based endpoint instead of blob storage
+                const endpoint = '/api/file/create-milestone';
+                console.log("Sending request to:", endpoint);
                 
                 const startTime = new Date().getTime();
                 console.log("Request started at:", new Date().toISOString());
                 
-                // Get auth cookie if present
-                const cookies = document.cookie.split(';').reduce((acc, cookie) => {
-                    const [key, value] = cookie.trim().split('=');
-                    acc[key] = value;
-                    return acc;
-                }, {});
-                
-                console.log("Auth cookies available:", Object.keys(cookies).filter(k => k.includes('nf_jwt')).length > 0);
-                
-                const response = await fetch(functionEndpoint, {
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        // Include Netlify auth token if available
-                        ...(cookies.nf_jwt && { 'Authorization': `Bearer ${cookies.nf_jwt}` })
+                        'Content-Type': 'application/json'
                     },
-                    // Include credentials for auth cookies
                     credentials: 'include',
                     body: JSON.stringify(requestBody)
                 });
@@ -785,13 +758,36 @@
                 
                 // Reload the timeline data
                 console.log("Reloading timeline data after successful creation");
-                loadTimelineData();
+                loadFileTimelineData();
                 
                 showStatusMessage('Milestone created successfully!', 'success');
             } catch (error) {
                 console.error('Error creating milestone:', error);
                 console.error('Error stack:', error.stack);
                 showStatusMessage('Failed to create milestone. Error: ' + error.message, 'error');
+            }
+        }
+        
+        // Function to load timeline data from file storage
+        async function loadFileTimelineData() {
+            try {
+                console.log("Loading timeline data from file storage...");
+                showStatusMessage('Loading timeline data...', 'info');
+                
+                const response = await fetch('/api/file/get-timeline');
+                console.log("Timeline data response status:", response.status);
+                
+                if (!response.ok) throw new Error('Failed to load timeline data');
+                
+                const data = await response.json();
+                console.log("Timeline data loaded:", data);
+                timelineData = data;
+                
+                renderMilestoneList();
+                showStatusMessage('Timeline data loaded successfully!', 'success');
+            } catch (error) {
+                console.error('Error loading timeline data:', error);
+                showStatusMessage('Failed to load timeline data. Please try again.', 'error');
             }
         }
         
@@ -925,9 +921,42 @@
             }
         }
         
-        function saveAllChanges() {
-            console.log("Saving all changes");
-            saveTimelineData();
+        async function saveAllChanges() {
+            try {
+                console.log("Saving all changes to timeline");
+                showStatusMessage('Saving all changes...', 'info');
+                
+                const password = sessionStorage.getItem('roadToAGI_adminPassword');
+                
+                // Use file storage endpoint instead of blob storage
+                const response = await fetch('/api/file/save-timeline', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        timelineData,
+                        password
+                    }),
+                    credentials: 'include'
+                });
+                
+                console.log("Save response status:", response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("Save error response:", errorText);
+                    throw new Error(`Failed to save: ${response.status} ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log("Save result:", result);
+                
+                showStatusMessage('Timeline saved successfully!', 'success');
+            } catch (error) {
+                console.error('Error saving timeline:', error);
+                showStatusMessage('Failed to save timeline. Error: ' + error.message, 'error');
+            }
         }
         
         function logout() {
@@ -1054,6 +1083,41 @@
             } catch (error) {
                 console.error('Error testing blob storage:', error);
                 showStatusMessage('Failed to test blob storage. Error: ' + error.message, 'error');
+            }
+        }
+
+        async function testFileStorage() {
+            try {
+                console.log("Testing file storage...");
+                showStatusMessage('Testing file storage...', 'info');
+                
+                const response = await fetch('/api/file/get-timeline', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                console.log("File storage test response status:", response.status);
+                
+                const data = await response.json();
+                console.log("File storage test data:", data);
+                
+                // Display test results - show number of timeline items
+                const numItems = data.timeline ? data.timeline.length : 0;
+                const lastUpdated = data.metadata ? data.metadata.lastUpdated : 'unknown';
+                
+                showStatusMessage(
+                    `File storage test passed! Found ${numItems} timeline items. Last updated: ${lastUpdated}`, 
+                    'success'
+                );
+                
+                // Update the timeline data
+                if (data.timeline) {
+                    timelineData = data;
+                    renderMilestoneList();
+                }
+            } catch (error) {
+                console.error('Error testing file storage:', error);
+                showStatusMessage('Failed to test file storage. Error: ' + error.message, 'error');
             }
         }
     </script>
